@@ -8,6 +8,7 @@ import 'data/api/api.dart';
 import 'data/api/etherscan_api.dart';
 import 'data/cache/cache_service.dart';
 import 'data/cached_address_repository.dart';
+import 'data/labeled_addresses_repository.dart';
 import 'data/tornado_repository.dart';
 import 'domain/interactor.dart';
 
@@ -15,7 +16,7 @@ import 'domain/interactor.dart';
 class AppScopeContainer extends ScopeContainer {
   @override
   List<Set<AsyncDep<Object>>> get initializeQueue => [
-    {_cacheServiceDep},
+    {_cacheServiceDep, _labeledAddressesRepositoryDep},
   ];
 
   late final _etherscanApiKey = dep<String?>(
@@ -27,7 +28,7 @@ class AppScopeContainer extends ScopeContainer {
   );
 
   /// Dio HTTP client dependency
-  late final _dioDep = dep<Dio>(
+  late final _etherscanDioDep = dep<Dio>(
     () => Dio(
       BaseOptions(
         baseUrl: 'https://api.etherscan.io',
@@ -38,7 +39,7 @@ class AppScopeContainer extends ScopeContainer {
 
   /// Etherscan API client dependency
   late final _etherscanApiDep = dep<EtherscanApi>(
-    () => EtherscanApi(_dioDep.get),
+    () => EtherscanApi(_etherscanDioDep.get),
   );
 
   /// BlockchainApi interface dependency
@@ -67,10 +68,15 @@ class AppScopeContainer extends ScopeContainer {
     () => Interactor(
       _cachedAddressRepositoryDep.get,
       _tornadoRepositoryDep.get,
+      _labeledAddressesRepositoryDep.get,
       _unionFindAlgDep.get,
     ),
   );
 
+  late final _labeledAddressesRepositoryDep =
+      asyncDep<LabeledAddressesRepository>(LabeledAddressesRepository.new);
+
+  /// Interactor dependency
   Interactor get interactor => _interactorDep.get;
 
   /// Initialize all required services

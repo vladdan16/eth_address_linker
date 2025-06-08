@@ -1,15 +1,18 @@
 import '../algorithm/union_find.dart';
 import '../data/address_repository.dart';
+import '../data/labeled_addresses_repository.dart';
 import '../data/tornado_repository.dart';
 
 class Interactor {
   final AddressRepository _addressRepository;
   final TornadoRepository _tornadoRepository;
+  final LabeledAddressesRepository _labeledAddressesRepository;
   final UnionFind<String> _unionFind;
 
   const Interactor(
     this._addressRepository,
     this._tornadoRepository,
+    this._labeledAddressesRepository,
     this._unionFind,
   );
 
@@ -19,6 +22,11 @@ class Interactor {
 
     final addresses = allTransactions
         .map((transaction) => transaction.account)
+        .where(
+          (address) =>
+              address.isNotEmpty &&
+              !_labeledAddressesRepository.isLabeled(address),
+        )
         .toSet();
 
     // TODO(vladdan16): implement more depth
@@ -27,8 +35,6 @@ class Interactor {
         address,
       );
 
-      // TODO(vladdan16): add heuristic to exclude addresses related
-      //  to common services
       for (final tx in txHistory) {
         final (from, to) = (tx.from, tx.to);
         if (from.isEmpty || to.isEmpty) {
@@ -57,6 +63,6 @@ class Interactor {
         }
       }
     }
-    // TODO: save pairs to file
+    // TODO: save pairs to csv file
   }
 }
