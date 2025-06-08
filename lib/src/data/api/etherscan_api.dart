@@ -107,9 +107,9 @@ final class EtherscanApi implements BlockchainApi {
     int endBlock = 99999999,
     String? contractAddress,
   }) async {
-    final List<TransactionRecord> allTransactions = [];
-    int page = 1;
-    bool hasMoreData = true;
+    final allTransactions = <TransactionRecord>[];
+    var page = 1;
+    var hasMoreData = true;
 
     while (hasMoreData) {
       final params = <String, Object?>{

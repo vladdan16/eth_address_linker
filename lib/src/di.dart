@@ -3,7 +3,6 @@ import 'package:dotenv/dotenv.dart';
 import 'package:yx_scope/yx_scope.dart';
 
 import 'algorithm/union_find.dart';
-import 'data/address_repository.dart';
 import 'data/api/api.dart';
 import 'data/api/etherscan_api.dart';
 import 'data/cache/cache_service.dart';
@@ -48,11 +47,6 @@ class AppScopeContainer extends ScopeContainer {
   /// Cache service dependency
   late final _cacheServiceDep = asyncDep<CacheService>(HiveCacheService.new);
 
-  /// Address repository dependency (without caching)
-  late final _addressRepositoryDep = dep<AddressRepository>(
-    () => AddressRepository(_blockchainApiDep.get),
-  );
-
   /// Cached address repository dependency
   late final _cachedAddressRepositoryDep = dep<CachedAddressRepository>(
     () => CachedAddressRepository(_blockchainApiDep.get, _cacheServiceDep.get),
@@ -62,9 +56,7 @@ class AppScopeContainer extends ScopeContainer {
     TornadoRepository.new,
   );
 
-  late final _unionFindAlgDep = dep<UnionFind<String>>(
-    () => UnionFind<String>(),
-  );
+  late final _unionFindAlgDep = dep<UnionFind<String>>(UnionFind<String>.new);
 
   late final _interactorDep = dep<Interactor>(
     () => Interactor(

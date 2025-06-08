@@ -87,7 +87,7 @@ class UnionFind<T> {
       try {
         // We don't call findPath here anymore to avoid potential recursion
         // The caller should explicitly call findPath if needed
-      } catch (e) {
+      } on Object catch (e) {
         print('Error finding path: $e');
       }
     }

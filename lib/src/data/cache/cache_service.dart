@@ -57,8 +57,8 @@ class HiveCacheService implements CacheService {
       final json = jsonDecode(jsonString);
       return json as T;
     } on Object catch (e) {
-      // If there's an error decoding, return null
-      return null;
+      print('Error decoding JSON: $jsonString, error: $e');
+      rethrow;
     }
   }
 
