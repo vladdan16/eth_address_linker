@@ -1,3 +1,4 @@
+
 import '../algorithm/union_find.dart';
 import '../data/address_repository.dart';
 import '../data/labeled_addresses_repository.dart';
@@ -29,8 +30,11 @@ class Interactor {
         )
         .toSet();
 
+    var index = 1;
     // TODO(vladdan16): implement more depth
     for (final address in addresses) {
+      print('Processing address $address ($index/${addresses.length})');
+      index++;
       final txHistory = await _addressRepository.getTransactionsForAddress(
         address,
       );
@@ -40,9 +44,20 @@ class Interactor {
         if (from.isEmpty || to.isEmpty) {
           continue;
         }
+        // Skip labeled addresses
+        if (_labeledAddressesRepository.isLabeled(from) ||
+            _labeledAddressesRepository.isLabeled(to)) {
+          continue;
+        }
+        if (await _addressRepository.isContract(to)) {
+          // print('Skipping contract $to');
+          continue;
+        }
         _unionFind.union(from, to);
       }
     }
+
+    print('Created transaction graph');
   }
 
   Future<void> generatePairs() async {
@@ -51,8 +66,20 @@ class Interactor {
     final deposits = _tornadoRepository.depositAddresses;
     final withdrawals = _tornadoRepository.withdrawalAddresses;
 
+    print(
+      'Checking connections between ${deposits.length} deposits and ${withdrawals.length} withdrawals...',
+    );
+
+    final total = deposits.length * withdrawals.length;
+    print('Total number of connections to check: $total');
+    var current = 1;
+
     for (var i = 0; i < deposits.length; i++) {
       for (var j = 0; j < withdrawals.length; j++) {
+        if (current % 1000 == 0) {
+          print('Checked $current connections');
+        }
+        current++;
         final dep = deposits[i];
         final wit = withdrawals[j];
         if (dep == wit) {
@@ -60,9 +87,26 @@ class Interactor {
         }
         if (_unionFind.connected(dep, wit)) {
           pairs.add((dep, wit));
+
+          if (_unionFind.debug) {
+            try {
+              print('Finding path between $dep and $wit');
+              final path = _unionFind.findPath(dep, wit);
+              if (path.isNotEmpty) {
+                print('Connection path: ${path.join(' -> ')}');
+              }
+            } on Object catch (e) {
+              print('Error finding path between $dep and $wit: $e');
+            }
+          }
         }
       }
     }
-    // TODO: save pairs to csv file
+    print('Found ${pairs.length} address pairs');
+
+    // save pairs to csv file
+    await _tornadoRepository.savePairsToCSV(pairs);
+
+    print('Saved ${pairs.length} address pairs to CSV file');
   }
 }

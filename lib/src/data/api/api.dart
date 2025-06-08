@@ -6,4 +6,6 @@ abstract interface class BlockchainApi {
   FutureOr<List<TransactionRecord>> getTransactionsByAddress(String address);
 
   FutureOr<List<TransactionRecord>> getTokenTransfersByAddress(String address);
+
+  FutureOr<bool> isContract(String address);
 }

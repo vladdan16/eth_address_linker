@@ -117,7 +117,7 @@ final class EtherscanApi implements BlockchainApi {
         'startblock': startBlock.toString(),
         'endblock': endBlock.toString(),
         'page': page.toString(),
-        'offset': _maxItemsPerPage.toString(),
+        'offset': (_maxItemsPerPage ~/ page).toString(),
       };
 
       if (contractAddress != null) {
@@ -141,7 +141,7 @@ final class EtherscanApi implements BlockchainApi {
           throw Exception('Etherscan API error: $message');
         }
 
-        final result = data['result'] as List<Object?>;
+        final result = data['result']! as List<Object?>;
         if (result.isEmpty) {
           hasMoreData = false;
           break;
@@ -150,7 +150,7 @@ final class EtherscanApi implements BlockchainApi {
         final transactions = result
             .map(
               (tx) => TransactionRecord.fromJson(
-                Map<String, Object?>.from(tx as Map<String, Object?>),
+                Map<String, Object?>.from(tx! as Map<String, Object?>),
               ),
             )
             .toList();
@@ -204,5 +204,35 @@ final class EtherscanApi implements BlockchainApi {
     String address,
   ) async {
     return _getPaginatedResults('account', 'txlistinternal', address);
+  }
+
+  @override
+  Future<bool> isContract(String address) async {
+    try {
+      final response = await _makeApiCall<Map<String, Object?>>(
+        'proxy',
+        'eth_getCode',
+        {'address': address, 'tag': 'latest'},
+      );
+
+      final data = response.data;
+      if (data == null) {
+        throw Exception('Etherscan API error: No data returned');
+      }
+
+      final result = data['result'] as String?;
+      if (result == null) {
+        throw Exception('Etherscan API error: No result returned');
+      }
+
+      // If the address has code (result is not '0x' or '0x0'), it's a contract
+      // '0x' or '0x0' means there's no code at this address
+      // (it's an EOA - Externally Owned Account)
+      return result != '0x' && result != '0x0';
+    } on Object catch (e) {
+      // If there's an error, assume it's not a contract
+      print('Error checking if address $address is a contract: $e');
+      return false;
+    }
   }
 }

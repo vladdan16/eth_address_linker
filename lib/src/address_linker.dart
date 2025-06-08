@@ -16,9 +16,13 @@ class AddressLinker {
         _scopeHolder.scope?.interactor ??
         (throw Exception('You should call init() first'));
 
+    print('Running AddressLinker...');
     await interactor.createTxGraph();
 
+    print('Generating pairs...');
     await interactor.generatePairs();
+
+    print('Done.');
   }
 
   Future<void> dispose() => _scopeHolder.drop();

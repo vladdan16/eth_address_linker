@@ -62,7 +62,9 @@ class AppScopeContainer extends ScopeContainer {
     TornadoRepository.new,
   );
 
-  late final _unionFindAlgDep = dep<UnionFind<String>>(UnionFind<String>.new);
+  late final _unionFindAlgDep = dep<UnionFind<String>>(
+    () => UnionFind<String>(),
+  );
 
   late final _interactorDep = dep<Interactor>(
     () => Interactor(

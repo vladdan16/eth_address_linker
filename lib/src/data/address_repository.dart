@@ -20,4 +20,9 @@ class AddressRepository {
   ) async {
     return _api.getTokenTransfersByAddress(address);
   }
+
+  /// Checks if an address is a contract
+  Future<bool> isContract(String address) async {
+    return _api.isContract(address);
+  }
 }

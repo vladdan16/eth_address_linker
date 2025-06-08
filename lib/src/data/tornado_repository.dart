@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'dart:io';
 
 import 'models/tornado_transaction.dart';
@@ -78,10 +77,41 @@ class TornadoRepository {
         final txs = await loadTornadoTransactions(file);
         transactions.addAll(txs);
       } on Object catch (e) {
-        log('Error loading $file: $e');
+        print('Error loading $file: $e');
       }
     }
 
     return transactions;
+  }
+
+  /// Saves address pairs to a CSV file
+  ///
+  /// Each pair represents a potential link between a deposit address
+  /// and a withdrawal address.
+  Future<void> savePairsToCSV(
+    Set<(String, String)> pairs, {
+    String filePath = 'assets/data/address_pairs.csv',
+  }) async {
+    final file = File(filePath);
+
+    // Create directory if it doesn't exist
+    final directory = file.parent;
+    if (!directory.existsSync()) {
+      await directory.create(recursive: true);
+    }
+
+    // Create CSV content with header
+    final buffer = StringBuffer()
+      ..writeln('deposit_address,withdrawal_address');
+
+    // Add each pair to the CSV
+    for (final (deposit, withdrawal) in pairs) {
+      buffer.writeln('$deposit,$withdrawal');
+    }
+
+    // Write to file
+    await file.writeAsString(buffer.toString());
+
+    print('Saved ${pairs.length} address pairs to $filePath');
   }
 }
