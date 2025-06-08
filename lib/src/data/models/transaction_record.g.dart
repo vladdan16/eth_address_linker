@@ -8,22 +8,22 @@ part of 'transaction_record.dart';
 
 _TransactionRecord _$TransactionRecordFromJson(Map<String, dynamic> json) =>
     _TransactionRecord(
-      blockNumber: (json['blockNumber'] as num).toInt(),
-      timeStamp: (json['timeStamp'] as num).toInt(),
+      blockNumber: json['blockNumber'] as String,
+      timeStamp: json['timeStamp'] as String,
       hash: json['hash'] as String,
-      transactionIndex: (json['transactionIndex'] as num).toInt(),
+      transactionIndex: json['transactionIndex'] as String,
       from: json['from'] as String,
       to: json['to'] as String,
-      value: (json['value'] as num).toInt(),
-      gas: (json['gas'] as num).toInt(),
-      gasPrice: (json['gasPrice'] as num).toInt(),
-      isError: (json['isError'] as num).toInt(),
+      value: json['value'] as String,
+      gas: json['gas'] as String,
+      gasPrice: json['gasPrice'] as String,
+      isError: json['isError'] as String,
       input: json['input'] as String,
       contractAddress: json['contractAddress'] as String,
-      cumulativeGasUsed: (json['cumulativeGasUsed'] as num).toInt(),
-      gasUsed: (json['gasUsed'] as num).toInt(),
-      confirmations: (json['confirmations'] as num).toInt(),
-      methodId: (json['methodId'] as num).toInt(),
+      cumulativeGasUsed: json['cumulativeGasUsed'] as String,
+      gasUsed: json['gasUsed'] as String,
+      confirmations: json['confirmations'] as String,
+      methodId: json['methodId'] as String,
       functionName: json['functionName'] as String,
     );
 

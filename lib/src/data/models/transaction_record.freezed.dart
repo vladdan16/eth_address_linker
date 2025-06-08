@@ -16,7 +16,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$TransactionRecord {
 
- int get blockNumber; int get timeStamp; String get hash; int get transactionIndex; String get from; String get to; int get value; int get gas; int get gasPrice; int get isError; String get input; String get contractAddress; int get cumulativeGasUsed; int get gasUsed; int get confirmations; int get methodId; String get functionName;
+ String get blockNumber; String get timeStamp; String get hash; String get transactionIndex; String get from; String get to; String get value; String get gas; String get gasPrice; String get isError; String get input; String get contractAddress; String get cumulativeGasUsed; String get gasUsed; String get confirmations; String get methodId; String get functionName;
 /// Create a copy of TransactionRecord
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -49,7 +49,7 @@ abstract mixin class $TransactionRecordCopyWith<$Res>  {
   factory $TransactionRecordCopyWith(TransactionRecord value, $Res Function(TransactionRecord) _then) = _$TransactionRecordCopyWithImpl;
 @useResult
 $Res call({
- int blockNumber, int timeStamp, String hash, int transactionIndex, String from, String to, int value, int gas, int gasPrice, int isError, String input, String contractAddress, int cumulativeGasUsed, int gasUsed, int confirmations, int methodId, String functionName
+ String blockNumber, String timeStamp, String hash, String transactionIndex, String from, String to, String value, String gas, String gasPrice, String isError, String input, String contractAddress, String cumulativeGasUsed, String gasUsed, String confirmations, String methodId, String functionName
 });
 
 
@@ -69,22 +69,22 @@ class _$TransactionRecordCopyWithImpl<$Res>
 @pragma('vm:prefer-inline') @override $Res call({Object? blockNumber = null,Object? timeStamp = null,Object? hash = null,Object? transactionIndex = null,Object? from = null,Object? to = null,Object? value = null,Object? gas = null,Object? gasPrice = null,Object? isError = null,Object? input = null,Object? contractAddress = null,Object? cumulativeGasUsed = null,Object? gasUsed = null,Object? confirmations = null,Object? methodId = null,Object? functionName = null,}) {
   return _then(_self.copyWith(
 blockNumber: null == blockNumber ? _self.blockNumber : blockNumber // ignore: cast_nullable_to_non_nullable
-as int,timeStamp: null == timeStamp ? _self.timeStamp : timeStamp // ignore: cast_nullable_to_non_nullable
-as int,hash: null == hash ? _self.hash : hash // ignore: cast_nullable_to_non_nullable
+as String,timeStamp: null == timeStamp ? _self.timeStamp : timeStamp // ignore: cast_nullable_to_non_nullable
+as String,hash: null == hash ? _self.hash : hash // ignore: cast_nullable_to_non_nullable
 as String,transactionIndex: null == transactionIndex ? _self.transactionIndex : transactionIndex // ignore: cast_nullable_to_non_nullable
-as int,from: null == from ? _self.from : from // ignore: cast_nullable_to_non_nullable
+as String,from: null == from ? _self.from : from // ignore: cast_nullable_to_non_nullable
 as String,to: null == to ? _self.to : to // ignore: cast_nullable_to_non_nullable
 as String,value: null == value ? _self.value : value // ignore: cast_nullable_to_non_nullable
-as int,gas: null == gas ? _self.gas : gas // ignore: cast_nullable_to_non_nullable
-as int,gasPrice: null == gasPrice ? _self.gasPrice : gasPrice // ignore: cast_nullable_to_non_nullable
-as int,isError: null == isError ? _self.isError : isError // ignore: cast_nullable_to_non_nullable
-as int,input: null == input ? _self.input : input // ignore: cast_nullable_to_non_nullable
+as String,gas: null == gas ? _self.gas : gas // ignore: cast_nullable_to_non_nullable
+as String,gasPrice: null == gasPrice ? _self.gasPrice : gasPrice // ignore: cast_nullable_to_non_nullable
+as String,isError: null == isError ? _self.isError : isError // ignore: cast_nullable_to_non_nullable
+as String,input: null == input ? _self.input : input // ignore: cast_nullable_to_non_nullable
 as String,contractAddress: null == contractAddress ? _self.contractAddress : contractAddress // ignore: cast_nullable_to_non_nullable
 as String,cumulativeGasUsed: null == cumulativeGasUsed ? _self.cumulativeGasUsed : cumulativeGasUsed // ignore: cast_nullable_to_non_nullable
-as int,gasUsed: null == gasUsed ? _self.gasUsed : gasUsed // ignore: cast_nullable_to_non_nullable
-as int,confirmations: null == confirmations ? _self.confirmations : confirmations // ignore: cast_nullable_to_non_nullable
-as int,methodId: null == methodId ? _self.methodId : methodId // ignore: cast_nullable_to_non_nullable
-as int,functionName: null == functionName ? _self.functionName : functionName // ignore: cast_nullable_to_non_nullable
+as String,gasUsed: null == gasUsed ? _self.gasUsed : gasUsed // ignore: cast_nullable_to_non_nullable
+as String,confirmations: null == confirmations ? _self.confirmations : confirmations // ignore: cast_nullable_to_non_nullable
+as String,methodId: null == methodId ? _self.methodId : methodId // ignore: cast_nullable_to_non_nullable
+as String,functionName: null == functionName ? _self.functionName : functionName // ignore: cast_nullable_to_non_nullable
 as String,
   ));
 }
@@ -99,22 +99,22 @@ class _TransactionRecord implements TransactionRecord {
   const _TransactionRecord({required this.blockNumber, required this.timeStamp, required this.hash, required this.transactionIndex, required this.from, required this.to, required this.value, required this.gas, required this.gasPrice, required this.isError, required this.input, required this.contractAddress, required this.cumulativeGasUsed, required this.gasUsed, required this.confirmations, required this.methodId, required this.functionName});
   factory _TransactionRecord.fromJson(Map<String, dynamic> json) => _$TransactionRecordFromJson(json);
 
-@override final  int blockNumber;
-@override final  int timeStamp;
+@override final  String blockNumber;
+@override final  String timeStamp;
 @override final  String hash;
-@override final  int transactionIndex;
+@override final  String transactionIndex;
 @override final  String from;
 @override final  String to;
-@override final  int value;
-@override final  int gas;
-@override final  int gasPrice;
-@override final  int isError;
+@override final  String value;
+@override final  String gas;
+@override final  String gasPrice;
+@override final  String isError;
 @override final  String input;
 @override final  String contractAddress;
-@override final  int cumulativeGasUsed;
-@override final  int gasUsed;
-@override final  int confirmations;
-@override final  int methodId;
+@override final  String cumulativeGasUsed;
+@override final  String gasUsed;
+@override final  String confirmations;
+@override final  String methodId;
 @override final  String functionName;
 
 /// Create a copy of TransactionRecord
@@ -150,7 +150,7 @@ abstract mixin class _$TransactionRecordCopyWith<$Res> implements $TransactionRe
   factory _$TransactionRecordCopyWith(_TransactionRecord value, $Res Function(_TransactionRecord) _then) = __$TransactionRecordCopyWithImpl;
 @override @useResult
 $Res call({
- int blockNumber, int timeStamp, String hash, int transactionIndex, String from, String to, int value, int gas, int gasPrice, int isError, String input, String contractAddress, int cumulativeGasUsed, int gasUsed, int confirmations, int methodId, String functionName
+ String blockNumber, String timeStamp, String hash, String transactionIndex, String from, String to, String value, String gas, String gasPrice, String isError, String input, String contractAddress, String cumulativeGasUsed, String gasUsed, String confirmations, String methodId, String functionName
 });
 
 
@@ -170,22 +170,22 @@ class __$TransactionRecordCopyWithImpl<$Res>
 @override @pragma('vm:prefer-inline') $Res call({Object? blockNumber = null,Object? timeStamp = null,Object? hash = null,Object? transactionIndex = null,Object? from = null,Object? to = null,Object? value = null,Object? gas = null,Object? gasPrice = null,Object? isError = null,Object? input = null,Object? contractAddress = null,Object? cumulativeGasUsed = null,Object? gasUsed = null,Object? confirmations = null,Object? methodId = null,Object? functionName = null,}) {
   return _then(_TransactionRecord(
 blockNumber: null == blockNumber ? _self.blockNumber : blockNumber // ignore: cast_nullable_to_non_nullable
-as int,timeStamp: null == timeStamp ? _self.timeStamp : timeStamp // ignore: cast_nullable_to_non_nullable
-as int,hash: null == hash ? _self.hash : hash // ignore: cast_nullable_to_non_nullable
+as String,timeStamp: null == timeStamp ? _self.timeStamp : timeStamp // ignore: cast_nullable_to_non_nullable
+as String,hash: null == hash ? _self.hash : hash // ignore: cast_nullable_to_non_nullable
 as String,transactionIndex: null == transactionIndex ? _self.transactionIndex : transactionIndex // ignore: cast_nullable_to_non_nullable
-as int,from: null == from ? _self.from : from // ignore: cast_nullable_to_non_nullable
+as String,from: null == from ? _self.from : from // ignore: cast_nullable_to_non_nullable
 as String,to: null == to ? _self.to : to // ignore: cast_nullable_to_non_nullable
 as String,value: null == value ? _self.value : value // ignore: cast_nullable_to_non_nullable
-as int,gas: null == gas ? _self.gas : gas // ignore: cast_nullable_to_non_nullable
-as int,gasPrice: null == gasPrice ? _self.gasPrice : gasPrice // ignore: cast_nullable_to_non_nullable
-as int,isError: null == isError ? _self.isError : isError // ignore: cast_nullable_to_non_nullable
-as int,input: null == input ? _self.input : input // ignore: cast_nullable_to_non_nullable
+as String,gas: null == gas ? _self.gas : gas // ignore: cast_nullable_to_non_nullable
+as String,gasPrice: null == gasPrice ? _self.gasPrice : gasPrice // ignore: cast_nullable_to_non_nullable
+as String,isError: null == isError ? _self.isError : isError // ignore: cast_nullable_to_non_nullable
+as String,input: null == input ? _self.input : input // ignore: cast_nullable_to_non_nullable
 as String,contractAddress: null == contractAddress ? _self.contractAddress : contractAddress // ignore: cast_nullable_to_non_nullable
 as String,cumulativeGasUsed: null == cumulativeGasUsed ? _self.cumulativeGasUsed : cumulativeGasUsed // ignore: cast_nullable_to_non_nullable
-as int,gasUsed: null == gasUsed ? _self.gasUsed : gasUsed // ignore: cast_nullable_to_non_nullable
-as int,confirmations: null == confirmations ? _self.confirmations : confirmations // ignore: cast_nullable_to_non_nullable
-as int,methodId: null == methodId ? _self.methodId : methodId // ignore: cast_nullable_to_non_nullable
-as int,functionName: null == functionName ? _self.functionName : functionName // ignore: cast_nullable_to_non_nullable
+as String,gasUsed: null == gasUsed ? _self.gasUsed : gasUsed // ignore: cast_nullable_to_non_nullable
+as String,confirmations: null == confirmations ? _self.confirmations : confirmations // ignore: cast_nullable_to_non_nullable
+as String,methodId: null == methodId ? _self.methodId : methodId // ignore: cast_nullable_to_non_nullable
+as String,functionName: null == functionName ? _self.functionName : functionName // ignore: cast_nullable_to_non_nullable
 as String,
   ));
 }

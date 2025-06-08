@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:dotenv/dotenv.dart';
 import 'package:yx_scope/yx_scope.dart';
 
 import 'algorithm/union_find.dart';
@@ -17,15 +18,20 @@ class AppScopeContainer extends ScopeContainer {
     {_cacheServiceDep},
   ];
 
-  /// Your Etherscan API key
-  static const String _etherscanApiKey = 'YOUR_API_KEY_HERE';
+  late final _etherscanApiKey = dep<String?>(
+    () => _dotenvDep.get['ETHERSCAN_API_KEY'],
+  );
+
+  late final _dotenvDep = dep<DotEnv>(
+    () => DotEnv(includePlatformEnvironment: true)..load(),
+  );
 
   /// Dio HTTP client dependency
   late final _dioDep = dep<Dio>(
     () => Dio(
       BaseOptions(
         baseUrl: 'https://api.etherscan.io',
-        queryParameters: {'apikey': _etherscanApiKey, 'sort': 'asc'},
+        queryParameters: {'apikey': _etherscanApiKey.get, 'sort': 'asc'},
       ),
     ),
   );

@@ -3,3 +3,5 @@
 .dart_tool/
 memory.md
 assets/data/
+cache/
+.env

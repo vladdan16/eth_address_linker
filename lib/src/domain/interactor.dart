@@ -19,7 +19,7 @@ class Interactor {
 
     final addresses = allTransactions
         .map((transaction) => transaction.account)
-        .toList();
+        .toSet();
 
     // TODO(vladdan16): implement more depth
     for (final address in addresses) {

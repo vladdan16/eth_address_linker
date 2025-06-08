@@ -7,22 +7,22 @@ part 'transaction_record.g.dart';
 @freezed
 abstract class TransactionRecord with _$TransactionRecord {
   const factory TransactionRecord({
-    required int blockNumber,
-    required int timeStamp,
+    required String blockNumber,
+    required String timeStamp,
     required String hash,
-    required int transactionIndex,
+    required String transactionIndex,
     required String from,
     required String to,
-    required int value,
-    required int gas,
-    required int gasPrice,
-    required int isError,
+    required String value,
+    required String gas,
+    required String gasPrice,
+    required String isError,
     required String input,
     required String contractAddress,
-    required int cumulativeGasUsed,
-    required int gasUsed,
-    required int confirmations,
-    required int methodId,
+    required String cumulativeGasUsed,
+    required String gasUsed,
+    required String confirmations,
+    required String methodId,
     required String functionName,
   }) = _TransactionRecord;
 
