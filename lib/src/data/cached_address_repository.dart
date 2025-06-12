@@ -95,10 +95,36 @@ class CachedAddressRepository implements AddressRepository {
     return tokenTransfers;
   }
 
+  /// Cache key prefix for address nametags
+  static const String _nametagCacheKeyPrefix = 'nametag_';
+
+  /// Gets the nametag for an address with caching
+  @override
+  Future<String?> getAddressNametag(String address) async {
+    final cacheKey = '$_nametagCacheKeyPrefix$address';
+
+    // Try to get data from cache first
+    if (await _cacheService.has(cacheKey)) {
+      final cachedData = await _cacheService.get<String?>(cacheKey);
+      if (cachedData != null) {
+        return cachedData;
+      }
+    }
+
+    // If not in cache, fetch from API
+    final nametag = await _api.getAddressNametag(address);
+
+    // Cache the result - nametags don't change often, so we can cache them
+    await _cacheService.set(cacheKey, nametag);
+
+    return nametag;
+  }
+
   /// Clears the cache for a specific address
   Future<void> clearCacheForAddress(String address) async {
     await _cacheService.remove('$_transactionsCacheKeyPrefix$address');
     await _cacheService.remove('$_tokenTransfersCacheKeyPrefix$address');
+    await _cacheService.remove('$_nametagCacheKeyPrefix$address');
   }
 
   /// Clears all cached data

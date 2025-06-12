@@ -49,13 +49,34 @@ class Interactor {
         if (from.isEmpty || to.isEmpty) {
           continue;
         }
-        // Skip labeled addresses
-        if (_labeledAddressesRepository.isCommon(from) ||
-            _labeledAddressesRepository.isCommon(to)) {
+        // Skip contract addresses
+        if (await _addressRepository.isContract(to)) {
+          if (isDebug) {
+            print('Skipping contract address $to');
+          }
           continue;
         }
-        if (await _addressRepository.isContract(to)) {
-          // print('Skipping contract $to');
+        // Skip labeled addresses
+        // TODO(vladdan16): maybe we don't need this check
+        if (_labeledAddressesRepository.isCommon(to)) {
+          if (isDebug) {
+            print('Skipping labeled address $to');
+          }
+          continue;
+        }
+        // Skip tagged addresses
+        final fromTag = await _addressRepository.getAddressNametag(tx.from);
+        final toTag = await _addressRepository.getAddressNametag(tx.to);
+        if (fromTag != null && fromTag.isNotEmpty) {
+          if (isDebug) {
+            print('Skipping from tagged address $from, tag: $fromTag');
+          }
+          continue;
+        }
+        if (toTag != null && toTag.isNotEmpty) {
+          if (isDebug) {
+            print('Skipping to tagged address $to, tag: $toTag');
+          }
           continue;
         }
         _unionFind.union(from, to);

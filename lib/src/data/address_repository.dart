@@ -34,4 +34,9 @@ class AddressRepository {
   Future<bool> isContract(String address) async {
     return _api.isContract(address);
   }
+
+  /// Gets the nametag for an address
+  Future<String?> getAddressNametag(String address) async {
+    return _api.getAddressNametag(address);
+  }
 }

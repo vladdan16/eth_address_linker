@@ -4,7 +4,9 @@ import 'package:yx_scope/yx_scope.dart';
 
 import 'algorithm/union_find.dart';
 import 'data/api/api.dart';
+import 'data/api/blockchain_api_wrapper.dart';
 import 'data/api/etherscan_api.dart';
+import 'data/api/moralis_api.dart';
 import 'data/cache/cache_service.dart';
 import 'data/cached_address_repository.dart';
 import 'data/labeled_addresses_repository.dart';
@@ -59,8 +61,20 @@ class AppScopeContainer extends ScopeContainer {
     () => EtherscanApi(_etherscanDioDep.get),
   );
 
+  /// Moralis API client dependency
+  late final _moralisApiDep = dep<MoralisApi>(
+    () => MoralisApi(_moralisDioDep.get),
+  );
+
+  /// BlockchainApi wrapper dependency
+  late final _blockchainApiWrapperDep = dep<BlockchainApiWrapper>(
+    () => BlockchainApiWrapper(_etherscanApiDep.get, _moralisApiDep.get),
+  );
+
   /// BlockchainApi interface dependency
-  late final _blockchainApiDep = dep<BlockchainApi>(() => _etherscanApiDep.get);
+  late final _blockchainApiDep = dep<BlockchainApi>(
+    () => _blockchainApiWrapperDep.get,
+  );
 
   /// Cache service dependency
   late final _cacheServiceDep = asyncDep<CacheService>(HiveCacheService.new);
