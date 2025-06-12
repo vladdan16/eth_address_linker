@@ -18,4 +18,9 @@ abstract interface class BlockchainApi {
 
   /// Checks if an address is a contract
   FutureOr<bool> isContract(String address);
+
+  /// Gets the nametag for an address from the blockchain explorer
+  ///
+  /// Returns null if no nametag is found
+  FutureOr<String?> getAddressNametag(String address);
 }

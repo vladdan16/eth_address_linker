@@ -3,19 +3,34 @@ import 'dart:io';
 
 import 'package:yx_scope/yx_scope.dart';
 
+import '../debug.dart';
+
 /// Service that tells whether address is related to some common service
 final class LabeledAddressesRepository implements AsyncLifecycle {
   static const _labeledAddresses = 'assets/data/labeledAddresses.json';
+
+  /// Addresses related to common services like exchange
+  ///
+  /// Note: it would be better to implement this feature through Etherscan API,
+  /// but it costs about 900$ per month
+  static const _commonAddressesFile = 'assets/data/common_addresses.txt';
 
   late final Set<String> _commonAddresses;
 
   @override
   Future<void> init() async {
+    _commonAddresses = {};
+    await _loadLabeledAddresses();
+    await _loadCommonAddresses();
+    print('Loaded ${_commonAddresses.length} common addresses');
+  }
+
+  Future<void> _loadLabeledAddresses() async {
     final file = File(_labeledAddresses);
+    final labeledAddresses = <String>{};
 
     final data = await file.readAsString();
     final map = jsonDecode(data) as Map<String, Object?>;
-    _commonAddresses = {};
     for (final cluster in map.values) {
       if (cluster is! List<Object?>) {
         throw Exception('Groups must be a list');
@@ -25,14 +40,32 @@ final class LabeledAddressesRepository implements AsyncLifecycle {
           throw Exception('Group must be a list');
         }
 
-        _commonAddresses.add(group.first! as String);
+        labeledAddresses.add(group.first! as String);
       }
     }
-    print('Loaded ${_commonAddresses.length} common addresses');
+    if (isDebug) {
+      print('Loaded ${labeledAddresses.length} labeled addresses');
+      print('Labeled addresses: $labeledAddresses');
+    }
+    _commonAddresses.addAll(labeledAddresses);
+  }
+
+  Future<void> _loadCommonAddresses() async {
+    final file = File(_commonAddressesFile);
+
+    final commonAddresses = await file.readAsLines();
+
+    if (isDebug) {
+      print('Loaded ${commonAddresses.length} common addresses');
+      print('Common addresses:');
+      print(commonAddresses);
+    }
+
+    _commonAddresses.addAll(commonAddresses);
   }
 
   /// Returns true if address is related to some common service
-  bool isLabeled(String address) => _commonAddresses.contains(address);
+  bool isCommon(String address) => _commonAddresses.contains(address);
 
   @override
   Future<void> dispose() async {

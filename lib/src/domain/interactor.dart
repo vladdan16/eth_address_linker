@@ -2,6 +2,7 @@ import '../algorithm/union_find.dart';
 import '../data/address_repository.dart';
 import '../data/labeled_addresses_repository.dart';
 import '../data/tornado_repository.dart';
+import '../debug.dart';
 
 class Interactor {
   final AddressRepository _addressRepository;
@@ -28,7 +29,7 @@ class Interactor {
         .where(
           (address) =>
               address.isNotEmpty &&
-              !_labeledAddressesRepository.isLabeled(address),
+              !_labeledAddressesRepository.isCommon(address),
         )
         .toSet();
 
@@ -49,8 +50,8 @@ class Interactor {
           continue;
         }
         // Skip labeled addresses
-        if (_labeledAddressesRepository.isLabeled(from) ||
-            _labeledAddressesRepository.isLabeled(to)) {
+        if (_labeledAddressesRepository.isCommon(from) ||
+            _labeledAddressesRepository.isCommon(to)) {
           continue;
         }
         if (await _addressRepository.isContract(to)) {
@@ -66,6 +67,7 @@ class Interactor {
 
   Future<void> generatePairs() async {
     final pairs = <(String, String)>{};
+    final popularTransitiveAddresses = <String, int>{};
 
     final deposits = _tornadoRepository.depositAddresses;
     final withdrawals = _tornadoRepository.withdrawalAddresses;
@@ -90,18 +92,28 @@ class Interactor {
           continue;
         }
         if (_unionFind.connected(dep, wit)) {
-          pairs.add((dep, wit));
+          // pairs.add((dep, wit));
+          final possiblePair = (dep, wit);
 
-          if (_unionFind.debug) {
+          if (isDebug) {
             try {
-              print('Finding path between $dep and $wit');
-              final path = _unionFind.findPath(dep, wit);
-              if (path.isNotEmpty) {
-                print('Connection path: ${path.join(' -> ')}');
+              // print('Finding path between $dep and $wit');
+              final path = _unionFind.findPath(dep, wit, maxDepth: 4);
+              if (path == null) {
+                // print('Path between $dep and $wit exceeds maximum depth');
+              } else if (path.isNotEmpty) {
+                // print('Connection path: ${path.join(' -> ')}');
+                path.sublist(1, path.length - 1).forEach((address) {
+                  popularTransitiveAddresses[address] =
+                      (popularTransitiveAddresses[address] ?? 0) + 1;
+                });
+                pairs.add(possiblePair);
               }
             } on Object catch (e) {
-              print('Error finding path between $dep and $wit: $e');
+              // print('Error finding path between $dep and $wit: $e');
             }
+          } else {
+            pairs.add(possiblePair);
           }
         }
       }
@@ -112,5 +124,15 @@ class Interactor {
     await _tornadoRepository.savePairsToCSV(pairs);
 
     print('Saved ${pairs.length} address pairs to CSV file');
+
+    if (isDebug) {
+      final sortedEntries = popularTransitiveAddresses.entries.toList()
+        ..sort((a, b) => b.value.compareTo(a.value));
+
+      print('Top 20 popular transitive addresses:');
+      sortedEntries
+          .take(20)
+          .forEach((entry) => print('${entry.key}: ${entry.value}'));
+    }
   }
 }

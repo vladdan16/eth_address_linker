@@ -22,16 +22,34 @@ class AppScopeContainer extends ScopeContainer {
     () => _dotenvDep.get['ETHERSCAN_API_KEY'],
   );
 
+  late final _moralisApiKey = dep<String?>(
+    () => _dotenvDep.get['MORALIS_API_KEY'],
+  );
+
   late final _dotenvDep = dep<DotEnv>(
     () => DotEnv(includePlatformEnvironment: true)..load(),
   );
 
-  /// Dio HTTP client dependency
+  /// Dio HTTP client dependency for Etherscan API
   late final _etherscanDioDep = dep<Dio>(
     () => Dio(
       BaseOptions(
         baseUrl: 'https://api.etherscan.io',
         queryParameters: {'apikey': _etherscanApiKey.get, 'sort': 'asc'},
+      ),
+    ),
+  );
+
+  /// Dio HTTP client dependency for Moralis API
+  late final _moralisDioDep = dep<Dio>(
+    () => Dio(
+      BaseOptions(
+        baseUrl: 'https://deep-index.moralis.io/api/v2.2',
+        queryParameters: {'chain': 'eth'},
+        headers: {
+          'X-API-Key': _moralisApiKey.get,
+          'Accept': 'application/json',
+        },
       ),
     ),
   );

@@ -15,14 +15,8 @@ class UnionFind<T> {
   /// Stores all direct connections between nodes
   final Map<T, Set<T>> _connections = {};
 
-  /// Debug flag to enable path logging
-  final bool debug;
-
   /// Creates a new UnionFind data structure
-  ///
-  /// If [debug] is true, the [connected] method will log the path
-  /// between connected nodes
-  UnionFind({this.debug = false});
+  UnionFind();
 
   /// If x is not seen yet, create a new singleton set { x }.
   void _makeSet(T x) {
@@ -78,21 +72,7 @@ class UnionFind<T> {
       return false;
     }
 
-    // Check if nodes are connected by comparing their roots
-    final isConnected = find(x) == find(y);
-
-    // Only try to find the path if they are actually connected and debug is enabled
-    // This avoids unnecessary path finding for unconnected nodes
-    if (isConnected && debug) {
-      try {
-        // We don't call findPath here anymore to avoid potential recursion
-        // The caller should explicitly call findPath if needed
-      } on Object catch (e) {
-        print('Error finding path: $e');
-      }
-    }
-
-    return isConnected;
+    return find(x) == find(y);
   }
 
   /// Finds the path between two connected nodes using BFS

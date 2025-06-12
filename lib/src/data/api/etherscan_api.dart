@@ -254,4 +254,10 @@ final class EtherscanApi implements BlockchainApi {
       return false;
     }
   }
+
+  @override
+  FutureOr<String?> getAddressNametag(String address) {
+    /// This feature is paid in Etherscan, so we won't implement it
+    throw UnimplementedError();
+  }
 }
