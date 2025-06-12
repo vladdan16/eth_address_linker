@@ -114,4 +114,29 @@ class TornadoRepository {
 
     print('Saved ${pairs.length} address pairs to $filePath');
   }
+
+  Future<List<(String, int)>> loadTopTransitiveAddresses({
+    String filePath = 'top_transitive_addresses.csv',
+  }) async {
+    final file = File(filePath);
+    if (!file.existsSync()) {
+      throw Exception('File not found: $filePath');
+    }
+
+    final lines = await file.readAsLines();
+    if (lines.isEmpty) {
+      return [];
+    }
+
+    final topAddresses = <(String, int)>[];
+    for (var i = 1; i < lines.length; i++) {
+      final line = lines[i];
+      final parts = line.split(',');
+      if (parts.length < 2) continue;
+
+      topAddresses.add((parts[0], int.parse(parts[1])));
+    }
+
+    return topAddresses;
+  }
 }

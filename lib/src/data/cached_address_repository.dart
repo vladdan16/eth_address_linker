@@ -111,13 +111,15 @@ class CachedAddressRepository implements AddressRepository {
       }
     }
 
+    // TODO(vladan16): handle API daily limit
     // If not in cache, fetch from API
-    final nametag = await _api.getAddressNametag(address);
+    // final nametag = await _api.getAddressNametag(address);
 
     // Cache the result - nametags don't change often, so we can cache them
-    await _cacheService.set(cacheKey, nametag);
+    // await _cacheService.set(cacheKey, nametag);
 
-    return nametag;
+    // return nametag;
+    return null;
   }
 
   /// Clears the cache for a specific address

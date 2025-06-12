@@ -36,5 +36,14 @@ class AddressLinker {
     return interactor.getAddressNametag(address);
   }
 
+  /// Processes the top transitive addresses
+  Future<void> processTopTransitiveAddresses() async {
+    final interactor =
+        _scopeHolder.scope?.interactor ??
+        (throw Exception('You should call init() first'));
+
+    await interactor.processTopTransitiveAddresses();
+  }
+
   Future<void> dispose() => _scopeHolder.drop();
 }

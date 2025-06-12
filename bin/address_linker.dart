@@ -21,6 +21,7 @@ ArgParser buildParser() {
     )
     ..addFlag('version', negatable: false, help: 'Print the tool version.')
     ..addCommand('run')
+    ..addCommand('process_transitive')
     ..addCommand('tag')
     ..addOption(
       'address',
@@ -72,6 +73,8 @@ void main(List<String> arguments) async {
       switch (command) {
         case 'run':
           await addressLinker.run();
+        case 'process_transitive':
+          await addressLinker.processTopTransitiveAddresses();
         case 'tag':
           final tagCommand = results.command!;
           final address = tagCommand['address'] as String;

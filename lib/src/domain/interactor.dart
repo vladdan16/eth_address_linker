@@ -58,7 +58,8 @@ class Interactor {
         }
         // Skip labeled addresses
         // TODO(vladdan16): maybe we don't need this check
-        if (_labeledAddressesRepository.isCommon(to)) {
+        if (_labeledAddressesRepository.isCommon(to) ||
+            _labeledAddressesRepository.isCommon(from)) {
           if (isDebug) {
             print('Skipping labeled address $to');
           }
@@ -119,11 +120,11 @@ class Interactor {
           if (isDebug) {
             try {
               // print('Finding path between $dep and $wit');
-              final path = _unionFind.findPath(dep, wit, maxDepth: 4);
+              final path = _unionFind.findPath(dep, wit);
               if (path == null) {
                 // print('Path between $dep and $wit exceeds maximum depth');
               } else if (path.isNotEmpty) {
-                // print('Connection path: ${path.join(' -> ')}');
+                print('Connection path: ${path.join(' -> ')}');
                 path.sublist(1, path.length - 1).forEach((address) {
                   popularTransitiveAddresses[address] =
                       (popularTransitiveAddresses[address] ?? 0) + 1;
@@ -150,10 +151,18 @@ class Interactor {
       final sortedEntries = popularTransitiveAddresses.entries.toList()
         ..sort((a, b) => b.value.compareTo(a.value));
 
-      print('Top 20 popular transitive addresses:');
-      sortedEntries
-          .take(20)
-          .forEach((entry) => print('${entry.key}: ${entry.value}'));
+      // print('Top 20 popular transitive addresses:');
+      // sortedEntries
+      //     .take(20)
+      //     .forEach((entry) => print('${entry.key}: ${entry.value}'));
+      final top = sortedEntries
+          .where((entry) => entry.value > 1)
+          .map((entry) => (entry.key, entry.value.toString()))
+          .toSet();
+      await _tornadoRepository.savePairsToCSV(
+        top,
+        filePath: 'top_transitive_addresses_v2.csv',
+      );
     }
   }
 
@@ -162,5 +171,24 @@ class Interactor {
   /// Returns null if no nametag is found
   Future<String?> getAddressNametag(String address) async {
     return _addressRepository.getAddressNametag(address);
+  }
+
+  /// Retrieve tags for top transitive addresses
+  Future<void> processTopTransitiveAddresses() async {
+    final topTransitiveAddresses = await _tornadoRepository
+        .loadTopTransitiveAddresses();
+    if (isDebug) {
+      print(
+        'Processing ${topTransitiveAddresses.length} top transitive addresses',
+      );
+    }
+    for (final (address, _) in topTransitiveAddresses) {
+      final tag = await _addressRepository.getAddressNametag(address);
+      if (isDebug) {
+        if (tag != null && tag.isNotEmpty) {
+          print('Found tag for address: $address - tag: $tag');
+        }
+      }
+    }
   }
 }

@@ -15,6 +15,10 @@ final class LabeledAddressesRepository implements AsyncLifecycle {
   /// but it costs about 900$ per month
   static const _commonAddressesFile = 'assets/data/common_addresses.txt';
 
+  /// Those are addresses not marked by some common tag, but they have too much
+  /// transactions in common with most of users in our dataset
+  static const _suspiciousAddressesFile = 'assets/data/suspicious_addresses.txt';
+
   late final Set<String> _commonAddresses;
 
   @override
@@ -22,6 +26,7 @@ final class LabeledAddressesRepository implements AsyncLifecycle {
     _commonAddresses = {};
     await _loadLabeledAddresses();
     await _loadCommonAddresses();
+    await _loadSuspiciousAddresses();
     print('Loaded ${_commonAddresses.length} common addresses');
   }
 
@@ -62,6 +67,20 @@ final class LabeledAddressesRepository implements AsyncLifecycle {
     }
 
     _commonAddresses.addAll(commonAddresses);
+  }
+
+  Future<void> _loadSuspiciousAddresses() async {
+    final file = File(_suspiciousAddressesFile);
+
+    final suspiciousAddresses = await file.readAsLines();
+
+    if (isDebug) {
+      print('Loaded ${suspiciousAddresses.length} suspicious addresses');
+      print('Suspicious addresses:');
+      print(suspiciousAddresses);
+    }
+
+    _commonAddresses.addAll(suspiciousAddresses);
   }
 
   /// Returns true if address is related to some common service
