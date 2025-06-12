@@ -98,7 +98,12 @@ class UnionFind<T> {
   /// Finds the path between two connected nodes using BFS
   ///
   /// Returns an empty list if the nodes are not connected
-  List<T> findPath(T start, T end) {
+  /// Finds the path between two connected nodes using BFS
+  ///
+  /// Returns an empty list if the nodes are not connected
+  /// If [maxDepth] is provided and the path length exceeds this value,
+  /// the search will stop and return null
+  List<T>? findPath(T start, T end, {int? maxDepth}) {
     if (start == end) return [start];
 
     // Check if nodes are connected by comparing their roots
@@ -117,6 +122,11 @@ class UnionFind<T> {
 
     while (queue.isNotEmpty) {
       final (current, path) = queue.removeAt(0);
+
+      // Check if we've exceeded the maximum depth
+      if (maxDepth != null && path.length > maxDepth) {
+        return null; // Path exceeds maximum depth, stop search
+      }
 
       // Check direct connections from the current node
       final neighbors = _connections[current] ?? {};
