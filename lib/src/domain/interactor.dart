@@ -1,6 +1,7 @@
 import '../algorithm/union_find.dart';
 import '../data/address_repository.dart';
 import '../data/labeled_addresses_repository.dart';
+import '../data/models/predicted_pair.dart';
 import '../data/tornado_repository.dart';
 import '../debug.dart';
 
@@ -88,81 +89,94 @@ class Interactor {
   }
 
   Future<void> generatePairs() async {
-    final pairs = <(String, String)>{};
-    final popularTransitiveAddresses = <String, int>{};
+    final contracts = _tornadoRepository.contracts;
 
-    final deposits = _tornadoRepository.depositAddresses;
-    final withdrawals = _tornadoRepository.withdrawalAddresses;
+    for (final contract in contracts) {
+      final pairs = <PredictedPair>[];
+      final popularTransitiveAddresses = <String, int>{};
+      var index = 0;
 
-    print(
-      'Checking connections between ${deposits.length} deposits and ${withdrawals.length} withdrawals...',
-    );
+      final deposits = _tornadoRepository.depositsByContract(contract)!;
+      final withdrawals = _tornadoRepository.withdrawalsByContract(contract)!;
 
-    final total = deposits.length * withdrawals.length;
-    print('Total number of connections to check: $total');
-    var current = 1;
+      print(
+        'Checking connections between ${deposits.length} deposits and ${withdrawals.length} withdrawals...',
+      );
 
-    for (var i = 0; i < deposits.length; i++) {
-      for (var j = 0; j < withdrawals.length; j++) {
-        if (current % 1000 == 0) {
-          print('Checked $current connections');
-        }
-        current++;
-        final dep = deposits[i];
-        final wit = withdrawals[j];
-        if (dep == wit) {
-          continue;
-        }
-        if (_unionFind.connected(dep, wit)) {
-          // pairs.add((dep, wit));
-          final possiblePair = (dep, wit);
+      final total = deposits.length * withdrawals.length;
+      print('Total number of connections to check: $total');
+      var current = 1;
 
-          if (isDebug) {
-            try {
-              // print('Finding path between $dep and $wit');
-              final path = _unionFind.findPath(dep, wit);
-              if (path == null) {
-                // print('Path between $dep and $wit exceeds maximum depth');
-              } else if (path.isNotEmpty) {
-                print('Connection path: ${path.join(' -> ')}');
-                path.sublist(1, path.length - 1).forEach((address) {
-                  popularTransitiveAddresses[address] =
-                      (popularTransitiveAddresses[address] ?? 0) + 1;
-                });
-                pairs.add(possiblePair);
+      for (var i = 0; i < deposits.length; i++) {
+        for (var j = 0; j < withdrawals.length; j++) {
+          if (current % 1000 == 0) {
+            print('Checked $current connections');
+          }
+          current++;
+          final dep = deposits[i];
+          final wit = withdrawals[j];
+          if (dep == wit) {
+            continue;
+          }
+          if (_unionFind.connected(dep.account, wit.account)) {
+            final possiblePair = PredictedPair(
+              index: index,
+              depHash: dep.txHash,
+              witHash: wit.txHash,
+              sender: dep.account,
+              receiver: wit.account,
+            );
+
+            if (isDebug) {
+              try {
+                // print('Finding path between $dep and $wit');
+                final path = _unionFind.findPath(dep.account, wit.account);
+                if (path == null) {
+                  // print('Path between $dep and $wit exceeds maximum depth');
+                } else if (path.isNotEmpty) {
+                  print('Connection path: ${path.join(' -> ')}');
+                  path.sublist(1, path.length - 1).forEach((address) {
+                    popularTransitiveAddresses[address] =
+                        (popularTransitiveAddresses[address] ?? 0) + 1;
+                  });
+                  pairs.add(possiblePair);
+                  index++;
+                }
+              } on Object catch (e) {
+                // print('Error finding path between $dep and $wit: $e');
               }
-            } on Object catch (e) {
-              // print('Error finding path between $dep and $wit: $e');
+            } else {
+              pairs.add(possiblePair);
+              index++;
             }
-          } else {
-            pairs.add(possiblePair);
           }
         }
       }
-    }
-    print('Found ${pairs.length} address pairs');
+      print('Found ${pairs.length} address pairs for contract $contract');
 
-    // save pairs to csv file
-    await _tornadoRepository.savePairsToCSV(pairs);
-
-    print('Saved ${pairs.length} address pairs to CSV file');
-
-    if (isDebug) {
-      final sortedEntries = popularTransitiveAddresses.entries.toList()
-        ..sort((a, b) => b.value.compareTo(a.value));
-
-      // print('Top 20 popular transitive addresses:');
-      // sortedEntries
-      //     .take(20)
-      //     .forEach((entry) => print('${entry.key}: ${entry.value}'));
-      final top = sortedEntries
-          .where((entry) => entry.value > 1)
-          .map((entry) => (entry.key, entry.value.toString()))
-          .toSet();
-      await _tornadoRepository.savePairsToCSV(
-        top,
-        filePath: 'top_transitive_addresses_v2.csv',
+      // save pairs to csv file
+      await _tornadoRepository.savePredictionToCSV(
+        pairs,
+        // TODO(vladdan16): fix file path
+        filePath: 'heuristic4$contract',
       );
+
+      print('Saved ${pairs.length} address pairs to CSV file');
+
+      if (isDebug) {
+        final sortedEntries = popularTransitiveAddresses.entries.toList()
+          ..sort((a, b) => b.value.compareTo(a.value));
+
+        final top = sortedEntries
+            .where((entry) => entry.value > 1)
+            .map((entry) => (entry.key, entry.value.toString()))
+            .toSet();
+        await _tornadoRepository.savePairsToCSV(
+          top,
+          // TODO(vladdan16): fix file path
+          filePath: 'top_transitive_addresses_$contract.csv',
+        );
+      }
     }
   }
 

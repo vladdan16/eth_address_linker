@@ -1,20 +1,20 @@
 import 'dart:io';
 
+import 'models/predicted_pair.dart';
 import 'models/tornado_transaction.dart';
 
 class TornadoRepository {
-  /// Map of transaction hash to Tornado transaction
-  final Map<String, TornadoTransaction> _tornadoTransactions = {};
+  final _depositsByContract = <String, List<TornadoTransaction>>{};
 
-  /// Map of deposit transactions by account
-  final Map<String, List<TornadoTransaction>> _depositsByAccount = {};
+  final _withdrawalsByContract = <String, List<TornadoTransaction>>{};
 
-  /// Map of withdrawal transactions by account
-  final Map<String, List<TornadoTransaction>> _withdrawalsByAccount = {};
+  List<String> get contracts => _depositsByContract.keys.toList();
 
-  List<String> get depositAddresses => _depositsByAccount.keys.toList();
+  List<TornadoTransaction>? depositsByContract(String contract) =>
+      _depositsByContract[contract];
 
-  List<String> get withdrawalAddresses => _withdrawalsByAccount.keys.toList();
+  List<TornadoTransaction>? withdrawalsByContract(String contract) =>
+      _withdrawalsByContract[contract];
 
   Future<List<TornadoTransaction>> loadTornadoTransactions(
     String filePath,
@@ -46,16 +46,14 @@ class TornadoRepository {
       );
 
       transactions.add(transaction);
-      _tornadoTransactions[transaction.txHash] = transaction;
+      // _tornadoTransactions[transaction.txHash] = transaction;
 
       if (transaction.isDeposit) {
-        _depositsByAccount
-            .putIfAbsent(transaction.account, () => [])
-            .add(transaction);
+        _depositsByContract.putIfAbsent(filePath, () => []);
+        _depositsByContract[filePath]?.add(transaction);
       } else if (transaction.isWithdrawal) {
-        _withdrawalsByAccount
-            .putIfAbsent(transaction.account, () => [])
-            .add(transaction);
+        _withdrawalsByContract.putIfAbsent(filePath, () => []);
+        _withdrawalsByContract[filePath]?.add(transaction);
       }
     }
 
@@ -113,6 +111,35 @@ class TornadoRepository {
     await file.writeAsString(buffer.toString());
 
     print('Saved ${pairs.length} address pairs to $filePath');
+  }
+
+  Future<void> savePredictionToCSV(
+    List<PredictedPair> pairs, {
+    String filePath = 'assets/data/predicted_pairs.csv',
+  }) async {
+    final file = File(filePath);
+
+    // Create directory if it doesn't exist
+    final directory = file.parent;
+    if (!directory.existsSync()) {
+      await directory.create(recursive: true);
+    }
+
+    // Create CSV content with header
+    final buffer = StringBuffer()
+      ..writeln('index,depHash,witHash,sender,receiver');
+
+    // Add each pair to the CSV
+    for (final pair in pairs) {
+      buffer.writeln(
+        '${pair.index},${pair.depHash},${pair.witHash},${pair.sender},${pair.receiver}',
+      );
+    }
+
+    // Write to file
+    await file.writeAsString(buffer.toString());
+
+    print('Saved ${pairs.length}');
   }
 
   Future<List<(String, int)>> loadTopTransitiveAddresses({

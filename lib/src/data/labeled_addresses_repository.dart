@@ -17,7 +17,8 @@ final class LabeledAddressesRepository implements AsyncLifecycle {
 
   /// Those are addresses not marked by some common tag, but they have too much
   /// transactions in common with most of users in our dataset
-  static const _suspiciousAddressesFile = 'assets/data/suspicious_addresses.txt';
+  static const _suspiciousAddressesFile =
+      'assets/data/suspicious_addresses.txt';
 
   late final Set<String> _commonAddresses;
 
