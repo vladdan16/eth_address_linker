@@ -19,8 +19,10 @@ class CachedAddressRepository implements AddressRepository {
   /// Gets transactions for an address with caching
   @override
   Future<List<TransactionRecord>> getTransactionsForAddress(
-    String address,
-  ) async {
+    String address, {
+    int? startTimestamp,
+    int? endTimestamp,
+  }) async {
     final cacheKey = '$_transactionsCacheKeyPrefix$address';
 
     // Try to get data from cache first
@@ -33,12 +35,23 @@ class CachedAddressRepository implements AddressRepository {
                 Map<String, Object?>.from(item as Map<String, dynamic>),
               ),
             )
+            .where(
+              (tx) => _filterTransaction(
+                tx,
+                start: startTimestamp,
+                end: endTimestamp,
+              ),
+            )
             .toList();
       }
     }
 
     // If not in cache, fetch from API
-    final transactions = await _api.getTransactionsByAddress(address);
+    final transactions = await _api.getTransactionsByAddress(
+      address,
+      startTimestamp: startTimestamp,
+      endTimestamp: endTimestamp,
+    );
 
     // Cache the result
     await _cacheService.set(
@@ -127,5 +140,27 @@ class CachedAddressRepository implements AddressRepository {
     await _cacheService.set(cacheKey, isContract);
 
     return isContract;
+  }
+
+  bool _filterTransaction(
+    TransactionRecord transaction, {
+    int? start,
+    int? end,
+  }) {
+    if (start == null && end == null) {
+      return true;
+    }
+
+    final timestamp = int.parse(transaction.timeStamp);
+
+    if (start != null && timestamp < start) {
+      return false;
+    }
+
+    if (end != null && timestamp > end) {
+      return false;
+    }
+
+    return true;
   }
 }

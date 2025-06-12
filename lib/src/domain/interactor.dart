@@ -16,6 +16,9 @@ class Interactor {
     this._unionFind,
   );
 
+  static const _startTimestamp = 1576526361;
+  static const _endTimestamp = 1586497829;
+
   Future<void> createTxGraph() async {
     final allTransactions = await _tornadoRepository
         .loadAlltornadoTransactions();
@@ -36,6 +39,8 @@ class Interactor {
       index++;
       final txHistory = await _addressRepository.getTransactionsForAddress(
         address,
+        startTimestamp: _startTimestamp,
+        endTimestamp: _endTimestamp,
       );
 
       for (final tx in txHistory) {

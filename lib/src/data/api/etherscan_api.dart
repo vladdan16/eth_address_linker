@@ -105,6 +105,8 @@ final class EtherscanApi implements BlockchainApi {
     String address, {
     int startBlock = 0,
     int endBlock = 99999999,
+    int? startTimestamp,
+    int? endTimestamp,
     String? contractAddress,
   }) async {
     final allTransactions = <TransactionRecord>[];
@@ -122,6 +124,15 @@ final class EtherscanApi implements BlockchainApi {
 
       if (contractAddress != null) {
         params['contractaddress'] = contractAddress;
+      }
+
+      // Add timestamp parameters if provided
+      if (startTimestamp != null) {
+        params['starttime'] = startTimestamp.toString();
+      }
+
+      if (endTimestamp != null) {
+        params['endtime'] = endTimestamp.toString();
       }
 
       try {
@@ -174,9 +185,17 @@ final class EtherscanApi implements BlockchainApi {
 
   @override
   Future<List<TransactionRecord>> getTransactionsByAddress(
-    String address,
-  ) async {
-    return _getPaginatedResults('account', 'txlist', address);
+    String address, {
+    int? startTimestamp,
+    int? endTimestamp,
+  }) async {
+    return _getPaginatedResults(
+      'account',
+      'txlist',
+      address,
+      startTimestamp: startTimestamp,
+      endTimestamp: endTimestamp,
+    );
   }
 
   @override

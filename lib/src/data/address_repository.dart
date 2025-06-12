@@ -8,10 +8,19 @@ class AddressRepository {
   AddressRepository(this._api);
 
   /// Gets transactions for an address
+  ///
+  /// If [startTimestamp] and [endTimestamp] are provided, only transactions
+  /// within that time range will be returned.
   Future<List<TransactionRecord>> getTransactionsForAddress(
-    String address,
-  ) async {
-    return _api.getTransactionsByAddress(address);
+    String address, {
+    int? startTimestamp,
+    int? endTimestamp,
+  }) async {
+    return _api.getTransactionsByAddress(
+      address,
+      startTimestamp: startTimestamp,
+      endTimestamp: endTimestamp,
+    );
   }
 
   /// Gets token transfers for an address
