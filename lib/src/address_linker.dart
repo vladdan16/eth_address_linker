@@ -25,5 +25,16 @@ class AddressLinker {
     print('Done.');
   }
 
+  /// Gets the nametag for an Ethereum address
+  ///
+  /// Returns null if no nametag is found
+  Future<String?> getAddressNametag(String address) async {
+    final interactor =
+        _scopeHolder.scope?.interactor ??
+        (throw Exception('You should call init() first'));
+
+    return interactor.getAddressNametag(address);
+  }
+
   Future<void> dispose() => _scopeHolder.drop();
 }

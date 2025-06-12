@@ -156,4 +156,11 @@ class Interactor {
           .forEach((entry) => print('${entry.key}: ${entry.value}'));
     }
   }
+
+  /// Gets the nametag for an Ethereum address
+  ///
+  /// Returns null if no nametag is found
+  Future<String?> getAddressNametag(String address) async {
+    return _addressRepository.getAddressNametag(address);
+  }
 }

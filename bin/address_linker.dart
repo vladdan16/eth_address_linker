@@ -20,7 +20,14 @@ ArgParser buildParser() {
       help: 'Show additional command output.',
     )
     ..addFlag('version', negatable: false, help: 'Print the tool version.')
-    ..addCommand('run');
+    ..addCommand('run')
+    ..addCommand('tag')
+    ..addOption(
+      'address',
+      abbr: 'a',
+      help: 'Ethereum address to get nametag for',
+      mandatory: true,
+    );
 }
 
 void printUsage(ArgParser argParser) {
@@ -28,6 +35,7 @@ void printUsage(ArgParser argParser) {
   print(argParser.usage);
   print('\nCommands:');
   print('  run      Runs construction of pairs');
+  print('  tag      Gets the nametag for an Ethereum address');
 }
 
 /// Main entry point for the application
@@ -64,6 +72,23 @@ void main(List<String> arguments) async {
       switch (command) {
         case 'run':
           await addressLinker.run();
+        case 'tag':
+          final tagCommand = results.command!;
+          final address = tagCommand['address'] as String;
+
+          if (address.isEmpty) {
+            print('Error: Address is required');
+            exit(1);
+          }
+
+          print('Getting nametag for address: $address');
+          final nametag = await addressLinker.getAddressNametag(address);
+
+          if (nametag == null || nametag.isEmpty) {
+            print('No nametag found for address: $address');
+          } else {
+            print('Nametag: $nametag');
+          }
         default:
           print('Unknown command: $command');
           printUsage(argParser);
