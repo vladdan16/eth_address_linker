@@ -23,7 +23,7 @@ class Interactor {
 
   Future<void> createTxGraph() async {
     final allTransactions = await _tornadoRepository
-        .loadAlltornadoTransactions();
+        .loadAllMixersTransactions();
 
     final addresses = allTransactions
         .map((transaction) => transaction.account)
@@ -35,7 +35,6 @@ class Interactor {
         .toSet();
 
     var index = 1;
-    // TODO(vladdan16): implement more depth
     for (final address in addresses) {
       print('Processing address $address ($index/${addresses.length})');
       index++;
@@ -50,6 +49,9 @@ class Interactor {
         if (from.isEmpty || to.isEmpty) {
           continue;
         }
+
+        // TODO(vladdan16): filter addresses with too big tx history
+
         // Skip contract addresses
         if (await _addressRepository.isContract(to)) {
           if (isDebug) {
@@ -89,9 +91,14 @@ class Interactor {
 
   /// Generate predicted pairs for each contract
   Future<void> generatePairs() async {
-    final contracts = _tornadoRepository.contracts;
+    // TODO(vladdan16): improve creating pairs by selecting
+    // the fittest pair by time
+    // moreover, withdrawal should be only after deposit
+    final contracts = _tornadoRepository.mixers;
 
     for (final contract in contracts) {
+      print('\nGenerating pairs for contract $contract');
+
       final pairs = <PredictedPair>[];
       // Transaction hashes that have already beed added to predicted pairs
       final detectedTransactions = <String>{};
@@ -196,18 +203,22 @@ Checking connections between ${deposits.length} deposits and ${withdrawals.lengt
 
   /// Retrieve tags for top transitive addresses
   Future<void> processTopTransitiveAddresses() async {
-    final topTransitiveAddresses = await _tornadoRepository
-        .loadTopTransitiveAddresses();
-    if (isDebug) {
-      print(
-        'Processing ${topTransitiveAddresses.length} top transitive addresses',
-      );
-    }
-    for (final (address, _) in topTransitiveAddresses) {
-      final tag = await _addressRepository.getAddressNametag(address);
+    for (final contract in _tornadoRepository.mixers) {
+      final topTransitiveAddresses = await _tornadoRepository
+          .loadTopTransitiveAddresses(
+            filePath: 'assets/result/top_transitive_addresses_$contract.csv',
+          );
       if (isDebug) {
-        if (tag != null && tag.isNotEmpty) {
-          print('Found tag for address: $address - tag: $tag');
+        print('''
+Processing ${topTransitiveAddresses.length} top transitive addresses for contract $contract
+''');
+      }
+      for (final (address, _) in topTransitiveAddresses) {
+        final tag = await _addressRepository.getAddressNametag(address);
+        if (isDebug) {
+          if (tag != null && tag.isNotEmpty) {
+            print('Found tag for address: $address - tag: $tag');
+          }
         }
       }
     }

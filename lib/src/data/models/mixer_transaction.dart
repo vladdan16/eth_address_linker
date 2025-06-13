@@ -1,4 +1,4 @@
-class TornadoTransaction {
+class MixerTransaction {
   final int index;
   final int timeStamp;
   final String txHash;
@@ -7,7 +7,7 @@ class TornadoTransaction {
   final double amount;
   final int gasPrice;
 
-  const TornadoTransaction({
+  const MixerTransaction({
     required this.index,
     required this.timeStamp,
     required this.txHash,

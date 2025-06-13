@@ -1,31 +1,39 @@
 import 'dart:io';
 
+import 'mixer_repository.dart';
+import 'models/mixer_transaction.dart';
 import 'models/predicted_pair.dart';
-import 'models/tornado_transaction.dart';
 
-class TornadoRepository {
-  final _depositsByContract = <String, List<TornadoTransaction>>{};
+final class TornadoRepository implements MixerRepository {
+  final _depositsByContract = <String, List<MixerTransaction>>{};
 
-  final _withdrawalsByContract = <String, List<TornadoTransaction>>{};
+  final _withdrawalsByContract = <String, List<MixerTransaction>>{};
 
-  /// Returns a list of all contracts
-  late final List<String> contracts = [
+  final _txByHash = <String, MixerTransaction>{};
+
+  @override
+  final List<String> mixers = [
     'Mixer_0.1ETH',
     'Mixer_1ETH',
     'Mixer_10ETH',
     'Mixer_100ETH',
   ];
 
-  /// Retrieve all deposit transactions for a given contract
-  List<TornadoTransaction>? depositsByContract(String contract) =>
+  @override
+  MixerTransaction? getTransactionByHash(String hash) => _txByHash[hash];
+
+  @override
+  List<MixerTransaction>? depositsByContract(String contract) =>
       _depositsByContract[contract];
 
-  /// Retrieve all withdrawal transactions for a given contract
-  List<TornadoTransaction>? withdrawalsByContract(String contract) =>
+
+  @override
+  List<MixerTransaction>? withdrawalsByContract(String contract) =>
       _withdrawalsByContract[contract];
 
   /// Loads tornado transactions from a CSV file
-  Future<List<TornadoTransaction>> loadTornadoTransactions(
+  @override
+  Future<List<MixerTransaction>> loadMixerTransactions(
     String contract,
   ) async {
     final filePath = 'assets/data/tornadoFullHistory$contract.csv';
@@ -39,13 +47,13 @@ class TornadoRepository {
       return [];
     }
 
-    final transactions = <TornadoTransaction>[];
+    final transactions = <MixerTransaction>[];
     for (var i = 1; i < lines.length; i++) {
       final line = lines[i];
       final parts = line.split(',');
       if (parts.length < 7) continue;
 
-      final transaction = TornadoTransaction(
+      final transaction = MixerTransaction(
         index: int.parse(parts[0]),
         timeStamp: int.parse(parts[1]),
         txHash: parts[2],
@@ -56,6 +64,7 @@ class TornadoRepository {
       );
 
       transactions.add(transaction);
+      _txByHash[transaction.txHash] = transaction;
 
       if (transaction.isDeposit) {
         _depositsByContract.putIfAbsent(contract, () => []);
@@ -70,12 +79,13 @@ class TornadoRepository {
   }
 
   /// Loads all tornado transactions from all files
-  Future<List<TornadoTransaction>> loadAlltornadoTransactions() async {
-    final transactions = <TornadoTransaction>[];
+  @override
+  Future<List<MixerTransaction>> loadAllMixersTransactions() async {
+    final transactions = <MixerTransaction>[];
 
-    for (final contract in contracts) {
+    for (final contract in mixers) {
       try {
-        final txs = await loadTornadoTransactions(contract);
+        final txs = await loadMixerTransactions(contract);
         transactions.addAll(txs);
       } on Object catch (e) {
         print('Error loading transaction from contract $contract: $e');
@@ -89,6 +99,7 @@ class TornadoRepository {
   ///
   /// Each pair represents a potential link between a deposit address
   /// and a withdrawal address.
+  @override
   Future<void> savePairsToCSV(
     Set<(String, String)> pairs, {
     String filename = 'pairs.csv',
@@ -96,28 +107,25 @@ class TornadoRepository {
     final filePath = 'assets/result/$filename';
     final file = File(filePath);
 
-    // Create directory if it doesn't exist
     final directory = file.parent;
     if (!directory.existsSync()) {
       await directory.create(recursive: true);
     }
 
-    // Create CSV content with header
     final buffer = StringBuffer()
       ..writeln('deposit_address,withdrawal_address');
 
-    // Add each pair to the CSV
     for (final (deposit, withdrawal) in pairs) {
       buffer.writeln('$deposit,$withdrawal');
     }
 
-    // Write to file
     await file.writeAsString(buffer.toString());
 
     print('Saved ${pairs.length} address pairs to $filePath');
   }
 
   /// Saves predicted transactions to a CSV file
+  @override
   Future<void> savePredictionToCSV(
     List<PredictedPair> pairs, {
     String filename = 'predicted_pairs.csv',
@@ -125,29 +133,26 @@ class TornadoRepository {
     final filePath = 'assets/result/$filename';
     final file = File(filePath);
 
-    // Create directory if it doesn't exist
     final directory = file.parent;
     if (!directory.existsSync()) {
       await directory.create(recursive: true);
     }
 
-    // Create CSV content with header
     final buffer = StringBuffer()
       ..writeln('index,depHash,witHash,sender,receiver');
 
-    // Add each pair to the CSV
     for (final p in pairs) {
       buffer.writeln(
         '${p.index},${p.depHash},${p.witHash},${p.sender},${p.receiver}',
       );
     }
 
-    // Write to file
     await file.writeAsString(buffer.toString());
 
     print('Saved ${pairs.length}');
   }
 
+  @override
   Future<List<(String, int)>> loadTopTransitiveAddresses({
     String filePath = 'top_transitive_addresses.csv',
   }) async {
