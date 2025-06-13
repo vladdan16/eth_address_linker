@@ -25,7 +25,6 @@ class CachedAddressRepository implements AddressRepository {
   }) async {
     final cacheKey = '$_transactionsCacheKeyPrefix$address';
 
-    // Try to get data from cache first
     if (await _cacheService.has(cacheKey)) {
       final cachedData = await _cacheService.get<List<dynamic>>(cacheKey);
       if (cachedData != null) {
@@ -36,7 +35,7 @@ class CachedAddressRepository implements AddressRepository {
               ),
             )
             .where(
-              (tx) => _filterTransaction(
+              (tx) => _filterTransactionByTime(
                 tx,
                 start: startTimestamp,
                 end: endTimestamp,
@@ -46,14 +45,12 @@ class CachedAddressRepository implements AddressRepository {
       }
     }
 
-    // If not in cache, fetch from API
     final transactions = await _api.getTransactionsByAddress(
       address,
       startTimestamp: startTimestamp,
       endTimestamp: endTimestamp,
     );
 
-    // Cache the result
     await _cacheService.set(
       cacheKey,
       transactions.map((tx) => tx.toJson()).toList(),
@@ -69,7 +66,6 @@ class CachedAddressRepository implements AddressRepository {
   ) async {
     final cacheKey = '$_tokenTransfersCacheKeyPrefix$address';
 
-    // Try to get data from cache first
     if (await _cacheService.has(cacheKey)) {
       final cachedData = await _cacheService.get<List<dynamic>>(cacheKey);
       if (cachedData != null) {
@@ -83,10 +79,8 @@ class CachedAddressRepository implements AddressRepository {
       }
     }
 
-    // If not in cache, fetch from API
     final tokenTransfers = await _api.getTokenTransfersByAddress(address);
 
-    // Cache the result
     await _cacheService.set(
       cacheKey,
       tokenTransfers.map((tx) => tx.toJson()).toList(),
@@ -103,7 +97,6 @@ class CachedAddressRepository implements AddressRepository {
   Future<String?> getAddressNametag(String address) async {
     final cacheKey = '$_nametagCacheKeyPrefix$address';
 
-    // Try to get data from cache first
     if (await _cacheService.has(cacheKey)) {
       final cachedData = await _cacheService.get<String?>(cacheKey);
       if (cachedData != null) {
@@ -111,15 +104,11 @@ class CachedAddressRepository implements AddressRepository {
       }
     }
 
-    // TODO(vladan16): handle API daily limit
-    // If not in cache, fetch from API
-    // final nametag = await _api.getAddressNametag(address);
+    final nametag = await _api.getAddressNametag(address);
 
-    // Cache the result - nametags don't change often, so we can cache them
-    // await _cacheService.set(cacheKey, nametag);
+    await _cacheService.set(cacheKey, nametag);
 
-    // return nametag;
-    return null;
+    return nametag;
   }
 
   /// Clears the cache for a specific address
@@ -140,20 +129,8 @@ class CachedAddressRepository implements AddressRepository {
   /// Checks if an address is a contract with caching
   @override
   Future<bool> isContract(String address) async {
-    const tornadoContracts = {
-      '0x12D66f87A04A9E220743712cE6d9bB1B5616B8Fc',
-      '0x47CE0C6eD5B0Ce3d3A51fdb1C52DC66a7c3c2936',
-      '0x910Cbd523D972eb0a6f4cAe4618aD62622b39DbF',
-      '0xA160cdAB225685dA1d56aa342Ad8841c3b53f291',
-    };
-
-    if (tornadoContracts.contains(address)) {
-      return true;
-    }
-
     final cacheKey = '$_isContractCacheKeyPrefix$address';
 
-    // Try to get data from cache first
     if (await _cacheService.has(cacheKey)) {
       final cachedData = await _cacheService.get<bool>(cacheKey);
       if (cachedData != null) {
@@ -161,7 +138,6 @@ class CachedAddressRepository implements AddressRepository {
       }
     }
 
-    // If not in cache, fetch from API
     final isContract = await _api.isContract(address);
 
     await _cacheService.set(cacheKey, isContract);
@@ -169,7 +145,7 @@ class CachedAddressRepository implements AddressRepository {
     return isContract;
   }
 
-  bool _filterTransaction(
+  bool _filterTransactionByTime(
     TransactionRecord transaction, {
     int? start,
     int? end,

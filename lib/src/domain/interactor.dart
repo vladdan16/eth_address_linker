@@ -57,8 +57,7 @@ class Interactor {
           }
           continue;
         }
-        // Skip labeled addresses
-        // TODO(vladdan16): maybe we don't need this check
+        // Skip common addresses
         if (_labeledAddressesRepository.isCommon(to) ||
             _labeledAddressesRepository.isCommon(from)) {
           if (isDebug) {

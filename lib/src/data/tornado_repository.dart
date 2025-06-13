@@ -28,7 +28,7 @@ class TornadoRepository {
   Future<List<TornadoTransaction>> loadTornadoTransactions(
     String contract,
   ) async {
-    final filePath = 'assets/data/$contract.csv';
+    final filePath = 'assets/data/tornadoFullHistory$contract.csv';
     final file = File(filePath);
     if (!file.existsSync()) {
       throw Exception('File not found: $filePath');

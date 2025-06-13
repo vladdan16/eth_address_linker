@@ -32,6 +32,8 @@ class MoralisApi implements BlockchainApi {
   /// Last API call timestamp for rate limiting
   DateTime? _lastApiCallTime;
 
+  bool _isQuotaExceeded = false;
+
   /// Handles rate limiting by delaying API calls if needed
   Future<void> _handleRateLimit() async {
     if (_lastApiCallTime != null) {
@@ -101,11 +103,13 @@ class MoralisApi implements BlockchainApi {
   /// address labels from the transactions.
   @override
   Future<String?> getAddressNametag(String address) async {
+    if (_isQuotaExceeded) {
+      return null;
+    }
+
     try {
-      // Normalize address format (lowercase for consistency)
       final normalizedAddress = address.toLowerCase();
 
-      // Make rate-limited API call to get transaction history for the address
       final response = await _makeApiCall<Map<String, Object?>>(
         '/$normalizedAddress',
       );
@@ -115,13 +119,11 @@ class MoralisApi implements BlockchainApi {
         return null;
       }
 
-      // Check for result in the response
       final result = data['result'] as List<Object?>?;
       if (result == null || result.isEmpty) {
         return null;
       }
 
-      // Check if this address is the recipient and has a label
       final transaction = result[0]! as Map<String, Object?>;
       if (transaction['to_address']?.toString().toLowerCase() ==
               normalizedAddress &&
@@ -130,7 +132,6 @@ class MoralisApi implements BlockchainApi {
         return transaction['to_address_label'].toString();
       }
 
-      // Check if this address is the sender and has a label
       if (transaction['from_address']?.toString().toLowerCase() ==
               normalizedAddress &&
           transaction['from_address_label'] != null &&
@@ -143,10 +144,18 @@ class MoralisApi implements BlockchainApi {
       print(
         'Rate limit exceeded when getting nametag for $address: ${e.message}',
       );
-      // Wait and retry once
+
       await Future<void>.delayed(e.retryAfter);
-      return getAddressNametag(address); // Recursive retry
+      return getAddressNametag(address);
     } on DioException catch (e) {
+      if (e.response?.statusCode == 401) {
+        print('Quota limit exceeded for Moralis API or token is invalid');
+        print(e);
+        print('Skipping all subsequent requests for address to API');
+        _isQuotaExceeded = true;
+        return null;
+      }
+
       print(
         'Error getting nametag from Moralis for address $address: ${e.message}',
       );
