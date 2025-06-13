@@ -93,6 +93,8 @@ class Interactor {
 
     for (final contract in contracts) {
       final pairs = <PredictedPair>[];
+      // Transaction hashes that have already beed added to predicted pairs
+      final detectedTransactions = <String>{};
       final popularTransitiveAddresses = <String, int>{};
       var index = 0;
 
@@ -115,7 +117,11 @@ Checking connections between ${deposits.length} deposits and ${withdrawals.lengt
           current++;
           final dep = deposits[i];
           final wit = withdrawals[j];
-          if (dep == wit) {
+          if (dep.account == wit.account) {
+            continue;
+          }
+          if (detectedTransactions.contains(dep.txHash) ||
+              detectedTransactions.contains(wit.txHash)) {
             continue;
           }
           if (_unionFind.connected(dep.account, wit.account)) {
@@ -138,6 +144,9 @@ Checking connections between ${deposits.length} deposits and ${withdrawals.lengt
                         (popularTransitiveAddresses[address] ?? 0) + 1;
                   });
                   pairs.add(possiblePair);
+                  detectedTransactions
+                    ..add(dep.txHash)
+                    ..add(wit.txHash);
                   index++;
                 }
               } on Object catch (e) {
@@ -145,6 +154,9 @@ Checking connections between ${deposits.length} deposits and ${withdrawals.lengt
               }
             } else {
               pairs.add(possiblePair);
+              detectedTransactions
+                ..add(dep.txHash)
+                ..add(wit.txHash);
               index++;
             }
           }
