@@ -15,7 +15,9 @@ class BlockchainApiWrapper implements BlockchainApi {
 
   /// Gets the nametag for an address from the blockchain explorer
   ///
-  /// This method routes the call to Moralis API which is specialized for this operation
+  /// This method routes the call to Moralis API which is specialized
+  /// for this operation
+  ///
   /// Returns null if no nametag is found
   @override
   Future<String?> getAddressNametag(String address) async {

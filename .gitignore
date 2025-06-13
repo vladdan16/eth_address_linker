@@ -3,5 +3,6 @@
 .dart_tool/
 memory.md
 assets/data/
+assets/result/
 cache/
 .env

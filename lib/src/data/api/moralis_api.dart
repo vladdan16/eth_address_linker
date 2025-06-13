@@ -152,9 +152,7 @@ class MoralisApi implements BlockchainApi {
       );
       return null;
     } on Object catch (e) {
-      print(
-        'Unexpected error getting nametag from Moralis for address $address: $e',
-      );
+      print('Error getting nametag from Moralis for address $address: $e');
       return null;
     }
   }

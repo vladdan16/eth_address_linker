@@ -164,7 +164,6 @@ class CachedAddressRepository implements AddressRepository {
     // If not in cache, fetch from API
     final isContract = await _api.isContract(address);
 
-    // Cache the result - contract status doesn't change, so we can cache it indefinitely
     await _cacheService.set(cacheKey, isContract);
 
     return isContract;

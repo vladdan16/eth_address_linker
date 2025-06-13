@@ -22,6 +22,7 @@ linter:
     specify_nonobvious_property_types: false
     sort_constructors_first: false
     avoid_print: false
+    public_member_api_docs: false
 
 # analyzer:
 #   exclude:

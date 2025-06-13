@@ -88,6 +88,7 @@ class Interactor {
     print('Created transaction graph');
   }
 
+  /// Generate predicted pairs for each contract
   Future<void> generatePairs() async {
     final contracts = _tornadoRepository.contracts;
 
@@ -99,9 +100,9 @@ class Interactor {
       final deposits = _tornadoRepository.depositsByContract(contract)!;
       final withdrawals = _tornadoRepository.withdrawalsByContract(contract)!;
 
-      print(
-        'Checking connections between ${deposits.length} deposits and ${withdrawals.length} withdrawals...',
-      );
+      print('''
+Checking connections between ${deposits.length} deposits and ${withdrawals.length} withdrawals...
+''');
 
       final total = deposits.length * withdrawals.length;
       print('Total number of connections to check: $total');
@@ -129,10 +130,8 @@ class Interactor {
 
             if (isDebug) {
               try {
-                // print('Finding path between $dep and $wit');
                 final path = _unionFind.findPath(dep.account, wit.account);
                 if (path == null) {
-                  // print('Path between $dep and $wit exceeds maximum depth');
                 } else if (path.isNotEmpty) {
                   print('Connection path: ${path.join(' -> ')}');
                   path.sublist(1, path.length - 1).forEach((address) {
@@ -143,7 +142,7 @@ class Interactor {
                   index++;
                 }
               } on Object catch (e) {
-                // print('Error finding path between $dep and $wit: $e');
+                print('Error finding path between $dep and $wit: $e');
               }
             } else {
               pairs.add(possiblePair);
@@ -154,11 +153,9 @@ class Interactor {
       }
       print('Found ${pairs.length} address pairs for contract $contract');
 
-      // save pairs to csv file
       await _tornadoRepository.savePredictionToCSV(
         pairs,
-        // TODO(vladdan16): fix file path
-        filePath: 'heuristic4$contract',
+        filename: 'heuristic4$contract.csv',
       );
 
       print('Saved ${pairs.length} address pairs to CSV file');
@@ -173,8 +170,7 @@ class Interactor {
             .toSet();
         await _tornadoRepository.savePairsToCSV(
           top,
-          // TODO(vladdan16): fix file path
-          filePath: 'top_transitive_addresses_$contract.csv',
+          filename: 'top_transitive_addresses_$contract.csv',
         );
       }
     }

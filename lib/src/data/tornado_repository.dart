@@ -8,17 +8,27 @@ class TornadoRepository {
 
   final _withdrawalsByContract = <String, List<TornadoTransaction>>{};
 
-  List<String> get contracts => _depositsByContract.keys.toList();
+  /// Returns a list of all contracts
+  late final List<String> contracts = [
+    'Mixer_0.1ETH',
+    'Mixer_1ETH',
+    'Mixer_10ETH',
+    'Mixer_100ETH',
+  ];
 
+  /// Retrieve all deposit transactions for a given contract
   List<TornadoTransaction>? depositsByContract(String contract) =>
       _depositsByContract[contract];
 
+  /// Retrieve all withdrawal transactions for a given contract
   List<TornadoTransaction>? withdrawalsByContract(String contract) =>
       _withdrawalsByContract[contract];
 
+  /// Loads tornado transactions from a CSV file
   Future<List<TornadoTransaction>> loadTornadoTransactions(
-    String filePath,
+    String contract,
   ) async {
+    final filePath = 'assets/data/$contract.csv';
     final file = File(filePath);
     if (!file.existsSync()) {
       throw Exception('File not found: $filePath');
@@ -46,36 +56,29 @@ class TornadoRepository {
       );
 
       transactions.add(transaction);
-      // _tornadoTransactions[transaction.txHash] = transaction;
 
       if (transaction.isDeposit) {
-        _depositsByContract.putIfAbsent(filePath, () => []);
-        _depositsByContract[filePath]?.add(transaction);
+        _depositsByContract.putIfAbsent(contract, () => []);
+        _depositsByContract[contract]?.add(transaction);
       } else if (transaction.isWithdrawal) {
-        _withdrawalsByContract.putIfAbsent(filePath, () => []);
-        _withdrawalsByContract[filePath]?.add(transaction);
+        _withdrawalsByContract.putIfAbsent(contract, () => []);
+        _withdrawalsByContract[contract]?.add(transaction);
       }
     }
 
     return transactions;
   }
 
+  /// Loads all tornado transactions from all files
   Future<List<TornadoTransaction>> loadAlltornadoTransactions() async {
     final transactions = <TornadoTransaction>[];
 
-    const files = [
-      'assets/data/tornadoFullHistoryMixer_0.1ETH.csv',
-      'assets/data/tornadoFullHistoryMixer_1ETH.csv',
-      'assets/data/tornadoFullHistoryMixer_10ETH.csv',
-      'assets/data/tornadoFullHistoryMixer_100ETH.csv',
-    ];
-
-    for (final file in files) {
+    for (final contract in contracts) {
       try {
-        final txs = await loadTornadoTransactions(file);
+        final txs = await loadTornadoTransactions(contract);
         transactions.addAll(txs);
       } on Object catch (e) {
-        print('Error loading $file: $e');
+        print('Error loading transaction from contract $contract: $e');
       }
     }
 
@@ -88,8 +91,9 @@ class TornadoRepository {
   /// and a withdrawal address.
   Future<void> savePairsToCSV(
     Set<(String, String)> pairs, {
-    String filePath = 'assets/data/address_pairs.csv',
+    String filename = 'pairs.csv',
   }) async {
+    final filePath = 'assets/result/$filename';
     final file = File(filePath);
 
     // Create directory if it doesn't exist
@@ -113,10 +117,12 @@ class TornadoRepository {
     print('Saved ${pairs.length} address pairs to $filePath');
   }
 
+  /// Saves predicted transactions to a CSV file
   Future<void> savePredictionToCSV(
     List<PredictedPair> pairs, {
-    String filePath = 'assets/data/predicted_pairs.csv',
+    String filename = 'predicted_pairs.csv',
   }) async {
+    final filePath = 'assets/result/$filename';
     final file = File(filePath);
 
     // Create directory if it doesn't exist
@@ -130,9 +136,9 @@ class TornadoRepository {
       ..writeln('index,depHash,witHash,sender,receiver');
 
     // Add each pair to the CSV
-    for (final pair in pairs) {
+    for (final p in pairs) {
       buffer.writeln(
-        '${pair.index},${pair.depHash},${pair.witHash},${pair.sender},${pair.receiver}',
+        '${p.index},${p.depHash},${p.witHash},${p.sender},${p.receiver}',
       );
     }
 

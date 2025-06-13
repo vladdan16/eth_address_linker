@@ -1,3 +1,6 @@
+// ignore analyzer for names in comments
+// ignore_for_file: comment_references
+
 /// A generic Union-Find (Disjoint-Set) data structure for arbitrary
 /// node types T.
 ///
@@ -46,29 +49,22 @@ class UnionFind<T> {
     final rankX = _rank[rootX]!;
     final rankY = _rank[rootY]!;
 
-    // Store the direct connection for path finding
     _connections.putIfAbsent(x, () => {}).add(y);
     _connections.putIfAbsent(y, () => {}).add(x);
 
-    // Attach the smaller rank tree under the larger one
     if (rankX < rankY) {
       _parent[rootX] = rootY;
     } else if (rankX > rankY) {
       _parent[rootY] = rootX;
     } else {
-      // If ranks are equal, pick one root and bump its rank
       _parent[rootY] = rootX;
       _rank[rootX] = rankX + 1;
     }
   }
 
   /// Returns true if x and y are in the same connected component.
-  ///
-  /// If [debug] is true, it will also log the path between x and y
-  /// if they are connected.
   bool connected(T x, T y) {
     if (!_parent.containsKey(x) || !_parent.containsKey(y)) {
-      // If we've never seen one of them, they can't be connected.
       return false;
     }
 
@@ -86,15 +82,12 @@ class UnionFind<T> {
   List<T>? findPath(T start, T end, {int? maxDepth}) {
     if (start == end) return [start];
 
-    // Check if nodes are connected by comparing their roots
-    // This avoids the recursive call to connected()
     if (!_parent.containsKey(start) ||
         !_parent.containsKey(end) ||
         find(start) != find(end)) {
       return [];
     }
 
-    // Use BFS to find the shortest path
     final queue = <(T, List<T>)>[
       (start, [start]),
     ];
@@ -103,16 +96,13 @@ class UnionFind<T> {
     while (queue.isNotEmpty) {
       final (current, path) = queue.removeAt(0);
 
-      // Check if we've exceeded the maximum depth
       if (maxDepth != null && path.length > maxDepth) {
-        return null; // Path exceeds maximum depth, stop search
+        return null;
       }
 
-      // Check direct connections from the current node
       final neighbors = _connections[current] ?? {};
       for (final neighbor in neighbors) {
         if (neighbor == end) {
-          // Found the end node, return the path
           return [...path, end];
         }
 
@@ -123,32 +113,6 @@ class UnionFind<T> {
       }
     }
 
-    // If we get here, there's no path (should not happen if connected returned true)
     return [];
   }
 }
-
-// void main() {
-//   // Suppose our undirected graph has edges among String‐nodes:
-//   //   "Alice"–"Bob", "Bob"–"Charlie", "David"–"Eva", "X"–"Y".
-//   final edges = <(String, String)>[
-//     ('Alice', 'Bob'),
-//     ('Bob', 'Charlie'),
-//     ('David', 'Eva'),
-//     ('X', 'Y'),
-//   ];
-//
-//   final uf = UnionFind<String>();
-//
-//   // 1) Union all edges
-//   for (final edge in edges) {
-//     uf.union(edge.$1, edge.$2);
-//   }
-//
-//   // 2) Query cluster membership
-//   print(uf.connected('Alice', 'Charlie')); // true  (Alice–Bob–Charlie)
-//   print(uf.connected('Alice', 'Eva')); // false (different components)
-//   print(uf.connected('David', 'Eva')); // true  (David–Eva)
-//   print(uf.connected('X', 'Z')); // false (Z not seen at all)
-//   print(uf.connected('X', 'Y')); // true  (X–Y)
-// }
