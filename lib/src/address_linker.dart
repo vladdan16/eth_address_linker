@@ -11,13 +11,16 @@ class AddressLinker {
     await _scopeHolder.scope?.initialize();
   }
 
-  Future<void> run() async {
+  Future<void> run({int? startTimestamp, int? endTimestamp}) async {
     final interactor =
         _scopeHolder.scope?.interactor ??
         (throw Exception('You should call init() first'));
 
     print('Running AddressLinker...');
-    await interactor.createTxGraph();
+    await interactor.createTxGraph(
+      startTimestamp: startTimestamp,
+      endTimestamp: endTimestamp,
+    );
 
     print('Generating pairs...');
     await interactor.generatePairs();

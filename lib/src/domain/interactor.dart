@@ -18,10 +18,17 @@ class Interactor {
     this._unionFind,
   );
 
-  static const _startTimestamp = 1576526361;
-  static const _endTimestamp = 1586497829;
+  // Default timestamp values if not provided via CLI
+  static const defaultStartTimestamp = 1546354022; // Jan 1, 2019
+  static const defaultEndTimestamp = 1659970022; // Aug 8, 2022
 
-  Future<void> createTxGraph() async {
+  Future<void> createTxGraph({int? startTimestamp, int? endTimestamp}) async {
+    final effectiveStartTimestamp = startTimestamp ?? defaultStartTimestamp;
+    final effectiveEndTimestamp = endTimestamp ?? defaultEndTimestamp;
+
+    print('''
+Using time range: ${DateTime.fromMillisecondsSinceEpoch(effectiveStartTimestamp * 1000)} to ${DateTime.fromMillisecondsSinceEpoch(effectiveEndTimestamp * 1000)}
+''');
     final allTransactions = await _tornadoRepository
         .loadAllMixersTransactions();
 
@@ -40,8 +47,8 @@ class Interactor {
       index++;
       final txHistory = await _addressRepository.getTransactionsForAddress(
         address,
-        startTimestamp: _startTimestamp,
-        endTimestamp: _endTimestamp,
+        startTimestamp: effectiveStartTimestamp,
+        endTimestamp: effectiveEndTimestamp,
       );
 
       for (final tx in txHistory) {
@@ -86,11 +93,11 @@ class Interactor {
         final addressToCheck = address == to ? from : to;
         final txs = await _addressRepository.getTransactionsForAddress(
           addressToCheck,
-          startTimestamp: _startTimestamp,
-          endTimestamp: _endTimestamp,
+          startTimestamp: effectiveStartTimestamp,
+          endTimestamp: effectiveEndTimestamp,
           limit: 20000,
         );
-        if (txs.length > 15000) {
+        if (txs.length > 1000) {
           if (isDebug) {
             print('Skipping address $addressToCheck with too big tx history');
           }
@@ -106,9 +113,6 @@ class Interactor {
 
   /// Generate predicted pairs for each contract
   Future<void> generatePairs() async {
-    // TODO(vladdan16): improve creating pairs by selecting
-    // the fittest pair by time
-    // moreover, withdrawal should be only after deposit
     final contracts = _tornadoRepository.mixers;
 
     for (final contract in contracts) {
@@ -139,13 +143,23 @@ Checking connections between ${deposits.length} deposits and ${withdrawals.lengt
           current++;
           final dep = deposits[i];
           final wit = withdrawals[j];
+
+          // Skip if same account
           if (dep.account == wit.account) {
             continue;
           }
+
+          // Skip if transaction already used in another pair
           if (detectedTransactions.contains(dep.txHash) ||
               detectedTransactions.contains(wit.txHash)) {
             continue;
           }
+
+          // Skip if withdrawal is not chronologically after deposit
+          if (wit.timeStamp <= dep.timeStamp) {
+            continue;
+          }
+
           if (_unionFind.connected(dep.account, wit.account)) {
             final possiblePair = PredictedPair(
               index: index,

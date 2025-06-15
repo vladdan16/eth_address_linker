@@ -6,7 +6,7 @@ import 'package:args/args.dart';
 const String version = '0.0.1';
 
 ArgParser buildParser() {
-  return ArgParser()
+  final parser = ArgParser()
     ..addFlag(
       'help',
       abbr: 'h',
@@ -19,24 +19,48 @@ ArgParser buildParser() {
       negatable: false,
       help: 'Show additional command output.',
     )
-    ..addFlag('version', negatable: false, help: 'Print the tool version.')
-    ..addCommand('run')
-    ..addCommand('process_transitive')
-    ..addCommand('tag')
+    ..addFlag('version', negatable: false, help: 'Print the tool version.');
+
+  // Add run command with timestamp options
+  final runCommand = ArgParser()
+    ..addOption(
+      'start-timestamp',
+      help: 'Start timestamp for transaction analysis (Unix timestamp)',
+      valueHelp: 'timestamp',
+    )
+    ..addOption(
+      'end-timestamp',
+      help: 'End timestamp for transaction analysis (Unix timestamp)',
+      valueHelp: 'timestamp',
+    );
+
+  parser.addCommand('run', runCommand);
+  parser.addCommand('process_transitive');
+
+  // Add tag command with address option
+  final tagCommand = ArgParser()
     ..addOption(
       'address',
       abbr: 'a',
       help: 'Ethereum address to get nametag for',
       mandatory: true,
     );
+
+  parser.addCommand('tag', tagCommand);
+
+  return parser;
 }
 
 void printUsage(ArgParser argParser) {
   print('Usage: dart address_linker.dart <flags> [arguments]');
   print(argParser.usage);
   print('\nCommands:');
-  print('  run      Runs construction of pairs');
-  print('  tag      Gets the nametag for an Ethereum address');
+  print('  run                  Runs construction of pairs');
+  print('    --start-timestamp  Optional start timestamp (Unix timestamp)');
+  print('    --end-timestamp    Optional end timestamp (Unix timestamp)');
+  print('  process_transitive   Process top transitive addresses');
+  print('  tag                  Gets the nametag for an Ethereum address');
+  print('    --address, -a      Ethereum address to get nametag for');
 }
 
 /// Main entry point for the application
@@ -72,7 +96,36 @@ void main(List<String> arguments) async {
     try {
       switch (command) {
         case 'run':
-          await addressLinker.run();
+          final runCommand = results.command!;
+          int? startTimestamp;
+          int? endTimestamp;
+
+          if (runCommand['start-timestamp'] != null) {
+            startTimestamp = int.tryParse(
+              runCommand['start-timestamp'] as String,
+            );
+            if (startTimestamp == null) {
+              print(
+                'Error: Invalid start timestamp format. Please provide a valid Unix timestamp.',
+              );
+              exit(1);
+            }
+          }
+
+          if (runCommand['end-timestamp'] != null) {
+            endTimestamp = int.tryParse(runCommand['end-timestamp'] as String);
+            if (endTimestamp == null) {
+              print(
+                'Error: Invalid end timestamp format. Please provide a valid Unix timestamp.',
+              );
+              exit(1);
+            }
+          }
+
+          await addressLinker.run(
+            startTimestamp: startTimestamp,
+            endTimestamp: endTimestamp,
+          );
         case 'process_transitive':
           await addressLinker.processTopTransitiveAddresses();
         case 'tag':
