@@ -50,8 +50,6 @@ class Interactor {
           continue;
         }
 
-        // TODO(vladdan16): filter addresses with too big tx history
-
         // Skip contract addresses
         if (await _addressRepository.isContract(to)) {
           if (isDebug) {
@@ -67,6 +65,7 @@ class Interactor {
           }
           continue;
         }
+
         // Skip tagged addresses
         final fromTag = await _addressRepository.getAddressNametag(tx.from);
         final toTag = await _addressRepository.getAddressNametag(tx.to);
@@ -82,6 +81,22 @@ class Interactor {
           }
           continue;
         }
+
+        // Skip addresses with too big tx history
+        final addressToCheck = address == to ? from : to;
+        final txs = await _addressRepository.getTransactionsForAddress(
+          addressToCheck,
+          startTimestamp: _startTimestamp,
+          endTimestamp: _endTimestamp,
+          limit: 20000,
+        );
+        if (txs.length > 15000) {
+          if (isDebug) {
+            print('Skipping address $addressToCheck with too big tx history');
+          }
+          continue;
+        }
+
         _unionFind.union(from, to);
       }
     }
@@ -203,7 +218,9 @@ Checking connections between ${deposits.length} deposits and ${withdrawals.lengt
 
   /// Retrieve tags for top transitive addresses
   Future<void> processTopTransitiveAddresses() async {
+    print('Processing top transitive addresses');
     for (final contract in _tornadoRepository.mixers) {
+      print('Processing top transitive addresses for contract $contract');
       final topTransitiveAddresses = await _tornadoRepository
           .loadTopTransitiveAddresses(
             filePath: 'assets/result/top_transitive_addresses_$contract.csv',

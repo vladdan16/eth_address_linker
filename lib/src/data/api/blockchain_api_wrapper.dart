@@ -34,11 +34,13 @@ class BlockchainApiWrapper implements BlockchainApi {
     String address, {
     int? startTimestamp,
     int? endTimestamp,
+    int? limit,
   }) async {
     return _etherscanApi.getTransactionsByAddress(
       address,
       startTimestamp: startTimestamp,
       endTimestamp: endTimestamp,
+      limit: limit,
     );
   }
 

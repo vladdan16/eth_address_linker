@@ -177,6 +177,7 @@ class MoralisApi implements BlockchainApi {
     String address, {
     int? startTimestamp,
     int? endTimestamp,
+    int? limit,
   }) {
     // We don't implement it for now. It is enough to utilize Etherscan Api
     throw UnimplementedError();

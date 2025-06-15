@@ -11,6 +11,7 @@ abstract interface class BlockchainApi {
     String address, {
     int? startTimestamp,
     int? endTimestamp,
+    int? limit,
   });
 
   /// Gets token transfers for an address

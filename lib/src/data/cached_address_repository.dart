@@ -22,6 +22,7 @@ class CachedAddressRepository implements AddressRepository {
     String address, {
     int? startTimestamp,
     int? endTimestamp,
+    int? limit,
   }) async {
     final cacheKey = '$_transactionsCacheKeyPrefix$address';
 
@@ -45,18 +46,24 @@ class CachedAddressRepository implements AddressRepository {
       }
     }
 
-    final transactions = await _api.getTransactionsByAddress(
-      address,
-      startTimestamp: startTimestamp,
-      endTimestamp: endTimestamp,
-    );
+    try {
+      final transactions = await _api.getTransactionsByAddress(
+        address,
+        startTimestamp: startTimestamp,
+        endTimestamp: endTimestamp,
+        limit: limit,
+      );
 
-    await _cacheService.set(
-      cacheKey,
-      transactions.map((tx) => tx.toJson()).toList(),
-    );
+      await _cacheService.set(
+        cacheKey,
+        transactions.map((tx) => tx.toJson()).toList(),
+      );
 
-    return transactions;
+      return transactions;
+    } on Object catch (e) {
+      print('Error getting transactions for address $address: $e');
+      return [];
+    }
   }
 
   /// Gets token transfers for an address with caching

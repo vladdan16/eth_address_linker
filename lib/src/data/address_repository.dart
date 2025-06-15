@@ -15,11 +15,13 @@ class AddressRepository {
     String address, {
     int? startTimestamp,
     int? endTimestamp,
+    int? limit,
   }) async {
     return _api.getTransactionsByAddress(
       address,
       startTimestamp: startTimestamp,
       endTimestamp: endTimestamp,
+      limit: limit,
     );
   }
 

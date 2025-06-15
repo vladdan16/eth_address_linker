@@ -108,18 +108,23 @@ final class EtherscanApi implements BlockchainApi {
     int? startTimestamp,
     int? endTimestamp,
     String? contractAddress,
+    int? limit,
   }) async {
     final allTransactions = <TransactionRecord>[];
     var page = 1;
     var hasMoreData = true;
 
     while (hasMoreData) {
+      if (allTransactions.length > (limit ?? double.infinity)) {
+        break;
+      }
+      final offset = _maxItemsPerPage ~/ page;
       final params = <String, Object?>{
         'address': address,
         'startblock': startBlock.toString(),
         'endblock': endBlock.toString(),
         'page': page.toString(),
-        'offset': (_maxItemsPerPage ~/ page).toString(),
+        'offset': offset.toString(),
       };
 
       if (contractAddress != null) {
@@ -168,14 +173,12 @@ final class EtherscanApi implements BlockchainApi {
 
         allTransactions.addAll(transactions);
 
-        // If we got less than the maximum items per page, we've reached the end
         if (transactions.length < _maxItemsPerPage) {
           hasMoreData = false;
         } else {
           page++;
         }
       } on RateLimitException catch (e) {
-        // Wait and retry on rate limit
         await Future<void>.delayed(e.retryAfter);
       }
     }
@@ -188,6 +191,7 @@ final class EtherscanApi implements BlockchainApi {
     String address, {
     int? startTimestamp,
     int? endTimestamp,
+    int? limit,
   }) async {
     return _getPaginatedResults(
       'account',
@@ -195,6 +199,7 @@ final class EtherscanApi implements BlockchainApi {
       address,
       startTimestamp: startTimestamp,
       endTimestamp: endTimestamp,
+      limit: limit,
     );
   }
 
