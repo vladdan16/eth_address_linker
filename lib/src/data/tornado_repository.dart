@@ -26,16 +26,13 @@ final class TornadoRepository implements MixerRepository {
   List<MixerTransaction>? depositsByContract(String contract) =>
       _depositsByContract[contract];
 
-
   @override
   List<MixerTransaction>? withdrawalsByContract(String contract) =>
       _withdrawalsByContract[contract];
 
   /// Loads tornado transactions from a CSV file
   @override
-  Future<List<MixerTransaction>> loadMixerTransactions(
-    String contract,
-  ) async {
+  Future<List<MixerTransaction>> loadMixerTransactions(String contract) async {
     final filePath = 'assets/data/tornadoFullHistory$contract.csv';
     final file = File(filePath);
     if (!file.existsSync()) {
