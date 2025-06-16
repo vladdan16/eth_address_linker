@@ -111,7 +111,7 @@ Using time range: ${DateTime.fromMillisecondsSinceEpoch(effectiveStartTimestamp 
   }
 
   /// Generate predicted pairs for each mixer
-  Future<void> generatePairs() async {
+  Future<void> generatePairs({int maxDepth = 4}) async {
     final mixers = _mixerRepository.mixers;
 
     for (final mixer in mixers) {
@@ -159,7 +159,11 @@ Checking connections between ${deposits.length} deposits and ${withdrawals.lengt
             continue;
           }
 
-          if (_graphAlgorithm.connected(dep.account, wit.account)) {
+          if (_graphAlgorithm.connected(
+            dep.account,
+            wit.account,
+            maxDepth: maxDepth,
+          )) {
             final possiblePair = PredictedPair(
               index: index,
               depHash: dep.txHash,
@@ -173,7 +177,7 @@ Checking connections between ${deposits.length} deposits and ${withdrawals.lengt
                 final path = _graphAlgorithm.findPath(
                   dep.account,
                   wit.account,
-                  maxDepth: 4,
+                  maxDepth: maxDepth,
                 );
                 if (path == null) {
                 } else if (path.isNotEmpty) {

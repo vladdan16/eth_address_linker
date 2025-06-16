@@ -12,7 +12,17 @@ class AddressLinker {
     await _scopeHolder.create(Algorithm.fromName(alg));
   }
 
-  Future<void> run({int? startTimestamp, int? endTimestamp}) async {
+  /// Runs the AddressLinker
+  ///
+  /// [startTimestamp] and [endTimestamp] - start and end for transaction
+  /// to be analyzed
+  ///
+  /// [maxDepth] - maximum depth between addresses to be treat as connected
+  Future<void> run({
+    int? startTimestamp,
+    int? endTimestamp,
+    int? maxDepth,
+  }) async {
     final interactor =
         _scopeHolder.scope?.interactor ??
         (throw Exception('You should call init() first'));
@@ -24,7 +34,9 @@ class AddressLinker {
     );
 
     print('Generating pairs...');
-    await interactor.generatePairs();
+    final depth = maxDepth ?? 4;
+    print('Max depth chosen: $depth');
+    await interactor.generatePairs(maxDepth: depth);
 
     print('Done.');
   }
