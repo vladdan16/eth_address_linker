@@ -22,7 +22,11 @@ class Interactor {
   static const defaultStartTimestamp = 1546354022; // Jan 1, 2019
   static const defaultEndTimestamp = 1659970022; // Aug 8, 2022
 
-  Future<void> createTxGraph({int? startTimestamp, int? endTimestamp}) async {
+  Future<void> createTxGraph({
+    int? startTimestamp,
+    int? endTimestamp,
+    int maxTxHistory = 1000,
+  }) async {
     final effectiveStartTimestamp = startTimestamp ?? defaultStartTimestamp;
     final effectiveEndTimestamp = endTimestamp ?? defaultEndTimestamp;
 
@@ -96,9 +100,11 @@ Using time range: ${DateTime.fromMillisecondsSinceEpoch(effectiveStartTimestamp 
           endTimestamp: effectiveEndTimestamp,
           limit: 20000,
         );
-        if (txs.length > 1000) {
+        if (txs.length > maxTxHistory) {
           if (isDebug) {
-            print('Skipping address $addressToCheck with too big tx history');
+            print('''
+Skipping address $addressToCheck with too big tx history (${txs.length} > $maxTxHistory)
+''');
           }
           continue;
         }

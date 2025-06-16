@@ -18,10 +18,14 @@ class AddressLinker {
   /// to be analyzed
   ///
   /// [maxDepth] - maximum depth between addresses to be treat as connected
+  ///
+  /// [maxTxHistory] - maximum number of transactions, if the number
+  /// of transactions exceeds this value, address will not be added to the graph
   Future<void> run({
     int? startTimestamp,
     int? endTimestamp,
     int? maxDepth,
+    int? maxTxHistory,
   }) async {
     final interactor =
         _scopeHolder.scope?.interactor ??
@@ -31,6 +35,7 @@ class AddressLinker {
     await interactor.createTxGraph(
       startTimestamp: startTimestamp,
       endTimestamp: endTimestamp,
+      maxTxHistory: maxTxHistory ?? 1000,
     );
 
     print('Generating pairs...');

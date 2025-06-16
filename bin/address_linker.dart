@@ -49,6 +49,13 @@ ArgParser buildParser() {
       help: 'Maximum depth for graph traversal when checking connections',
       valueHelp: 'depth',
       defaultsTo: '4',
+    )
+    ..addOption(
+      'max-tx-history',
+      help:
+          'Maximum transaction history size for an address (skip if exceeded)',
+      valueHelp: 'count',
+      defaultsTo: '1000',
     );
 
   parser
@@ -78,6 +85,9 @@ void printUsage(ArgParser argParser) {
   print('    --algorithm        Graph algorithm to use (unionfind or bfs)');
   print(
     '    --max-depth        Maximum depth for graph traversal (default: 4)',
+  );
+  print(
+    '    --max-tx-history   Maximum transaction history size (default: 1000)',
   );
   print('  process_transitive   Process top transitive addresses');
   print('  tag                  Gets the nametag for an Ethereum address');
@@ -121,6 +131,8 @@ void main(List<String> arguments) async {
           int? startTimestamp;
           int? endTimestamp;
           final maxDepth = int.tryParse(runCommand['max-depth'] as String) ?? 4;
+          final maxTxHistory =
+              int.tryParse(runCommand['max-tx-history'] as String) ?? 1000;
 
           if (runCommand['start-timestamp'] != null) {
             startTimestamp = int.tryParse(
@@ -148,6 +160,7 @@ Error: Invalid end timestamp format. Please provide a valid Unix timestamp.
             startTimestamp: startTimestamp,
             endTimestamp: endTimestamp,
             maxDepth: maxDepth,
+            maxTxHistory: maxTxHistory,
           );
         case 'process_transitive':
           await addressLinker.processTopTransitiveAddresses();
