@@ -1,19 +1,19 @@
 import '../algorithm/union_find.dart';
 import '../data/address_repository.dart';
 import '../data/labeled_addresses_repository.dart';
+import '../data/mixer_repository.dart';
 import '../data/models/predicted_pair.dart';
-import '../data/tornado_repository.dart';
 import '../debug.dart';
 
 class Interactor {
   final AddressRepository _addressRepository;
-  final TornadoRepository _tornadoRepository;
+  final MixerRepository _mixerRepository;
   final LabeledAddressesRepository _labeledAddressesRepository;
   final UnionFind<String> _unionFind;
 
   const Interactor(
     this._addressRepository,
-    this._tornadoRepository,
+    this._mixerRepository,
     this._labeledAddressesRepository,
     this._unionFind,
   );
@@ -29,8 +29,7 @@ class Interactor {
     print('''
 Using time range: ${DateTime.fromMillisecondsSinceEpoch(effectiveStartTimestamp * 1000)} to ${DateTime.fromMillisecondsSinceEpoch(effectiveEndTimestamp * 1000)}
 ''');
-    final allTransactions = await _tornadoRepository
-        .loadAllMixersTransactions();
+    final allTransactions = await _mixerRepository.loadAllMixersTransactions();
 
     final addresses = allTransactions
         .map((transaction) => transaction.account)
@@ -111,12 +110,12 @@ Using time range: ${DateTime.fromMillisecondsSinceEpoch(effectiveStartTimestamp 
     print('Created transaction graph');
   }
 
-  /// Generate predicted pairs for each contract
+  /// Generate predicted pairs for each mixer
   Future<void> generatePairs() async {
-    final contracts = _tornadoRepository.mixers;
+    final mixers = _mixerRepository.mixers;
 
-    for (final contract in contracts) {
-      print('\nGenerating pairs for contract $contract');
+    for (final mixer in mixers) {
+      print('\nGenerating pairs for mixer $mixer');
 
       final pairs = <PredictedPair>[];
       // Transaction hashes that have already beed added to predicted pairs
@@ -124,8 +123,8 @@ Using time range: ${DateTime.fromMillisecondsSinceEpoch(effectiveStartTimestamp 
       final popularTransitiveAddresses = <String, int>{};
       var index = 0;
 
-      final deposits = _tornadoRepository.depositsByContract(contract)!;
-      final withdrawals = _tornadoRepository.withdrawalsByContract(contract)!;
+      final deposits = _mixerRepository.depositsByMixer(mixer)!;
+      final withdrawals = _mixerRepository.withdrawalsByMixer(mixer)!;
 
       print('''
 Checking connections between ${deposits.length} deposits and ${withdrawals.length} withdrawals...
@@ -171,7 +170,11 @@ Checking connections between ${deposits.length} deposits and ${withdrawals.lengt
 
             if (isDebug) {
               try {
-                final path = _unionFind.findPath(dep.account, wit.account);
+                final path = _unionFind.findPath(
+                  dep.account,
+                  wit.account,
+                  maxDepth: 4,
+                );
                 if (path == null) {
                 } else if (path.isNotEmpty) {
                   print('Connection path: ${path.join(' -> ')}');
@@ -198,11 +201,11 @@ Checking connections between ${deposits.length} deposits and ${withdrawals.lengt
           }
         }
       }
-      print('Found ${pairs.length} address pairs for contract $contract');
+      print('Found ${pairs.length} address pairs for contract $mixer');
 
-      await _tornadoRepository.savePredictionToCSV(
+      await _mixerRepository.savePredictionToCSV(
         pairs,
-        filename: 'heuristic4$contract.csv',
+        filename: 'heuristic4$mixer.csv',
       );
 
       print('Saved ${pairs.length} address pairs to CSV file');
@@ -215,9 +218,9 @@ Checking connections between ${deposits.length} deposits and ${withdrawals.lengt
             .where((entry) => entry.value > 1)
             .map((entry) => (entry.key, entry.value.toString()))
             .toSet();
-        await _tornadoRepository.savePairsToCSV(
+        await _mixerRepository.savePairsToCSV(
           top,
-          filename: 'top_transitive_addresses_$contract.csv',
+          filename: 'top_transitive_addresses_$mixer.csv',
         );
       }
     }
@@ -233,9 +236,9 @@ Checking connections between ${deposits.length} deposits and ${withdrawals.lengt
   /// Retrieve tags for top transitive addresses
   Future<void> processTopTransitiveAddresses() async {
     print('Processing top transitive addresses');
-    for (final contract in _tornadoRepository.mixers) {
+    for (final contract in _mixerRepository.mixers) {
       print('Processing top transitive addresses for contract $contract');
-      final topTransitiveAddresses = await _tornadoRepository
+      final topTransitiveAddresses = await _mixerRepository
           .loadTopTransitiveAddresses(
             filePath: 'assets/result/top_transitive_addresses_$contract.csv',
           );

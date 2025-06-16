@@ -11,14 +11,14 @@ abstract interface class MixerRepository {
   /// Retrieve a mixer transaction by its hash
   MixerTransaction? getTransactionByHash(String hash);
 
-  /// Retrieve all deposit transactions for a given contract
-  List<MixerTransaction>? depositsByContract(String contract);
+  /// Retrieve all deposit transactions for a given mixer
+  List<MixerTransaction>? depositsByMixer(String mixer);
 
-  /// Retrieve all withdrawal transactions for a given contract
-  List<MixerTransaction>? withdrawalsByContract(String contract);
+  /// Retrieve all withdrawal transactions for a given mixer
+  List<MixerTransaction>? withdrawalsByMixer(String mixer);
 
   /// Loads mixer transactions from a CSV file
-  FutureOr<List<MixerTransaction>> loadMixerTransactions(String contract);
+  FutureOr<List<MixerTransaction>> loadMixerTransactions(String mixer);
 
   /// Loads all mixer transactions from all files
   FutureOr<List<MixerTransaction>> loadAllMixersTransactions();

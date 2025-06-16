@@ -21,7 +21,6 @@ ArgParser buildParser() {
     )
     ..addFlag('version', negatable: false, help: 'Print the tool version.');
 
-  // Add run command with timestamp options
   final runCommand = ArgParser()
     ..addOption(
       'start-timestamp',
@@ -34,10 +33,10 @@ ArgParser buildParser() {
       valueHelp: 'timestamp',
     );
 
-  parser.addCommand('run', runCommand);
-  parser.addCommand('process_transitive');
+  parser
+    ..addCommand('run', runCommand)
+    ..addCommand('process_transitive');
 
-  // Add tag command with address option
   final tagCommand = ArgParser()
     ..addOption(
       'address',
@@ -86,7 +85,6 @@ void main(List<String> arguments) async {
     final addressLinker = AddressLinker();
     await addressLinker.init();
 
-    // Process commands
     final command = results.command?.name;
     if (command == null) {
       printUsage(argParser);
@@ -105,9 +103,9 @@ void main(List<String> arguments) async {
               runCommand['start-timestamp'] as String,
             );
             if (startTimestamp == null) {
-              print(
-                'Error: Invalid start timestamp format. Please provide a valid Unix timestamp.',
-              );
+              print('''
+Error: Invalid start timestamp format. Please provide a valid Unix timestamp.
+''');
               exit(1);
             }
           }
@@ -115,9 +113,9 @@ void main(List<String> arguments) async {
           if (runCommand['end-timestamp'] != null) {
             endTimestamp = int.tryParse(runCommand['end-timestamp'] as String);
             if (endTimestamp == null) {
-              print(
-                'Error: Invalid end timestamp format. Please provide a valid Unix timestamp.',
-              );
+              print('''
+Error: Invalid end timestamp format. Please provide a valid Unix timestamp.
+''');
               exit(1);
             }
           }
@@ -157,7 +155,6 @@ void main(List<String> arguments) async {
       exit(1);
     }
   } on FormatException catch (e) {
-    // Print usage information if an invalid argument was provided.
     print(e.message);
     print('');
     printUsage(argParser);

@@ -5,9 +5,9 @@ import 'models/mixer_transaction.dart';
 import 'models/predicted_pair.dart';
 
 final class TornadoRepository implements MixerRepository {
-  final _depositsByContract = <String, List<MixerTransaction>>{};
+  final _depositsByMixer = <String, List<MixerTransaction>>{};
 
-  final _withdrawalsByContract = <String, List<MixerTransaction>>{};
+  final _withdrawalsByMixer = <String, List<MixerTransaction>>{};
 
   final _txByHash = <String, MixerTransaction>{};
 
@@ -23,17 +23,17 @@ final class TornadoRepository implements MixerRepository {
   MixerTransaction? getTransactionByHash(String hash) => _txByHash[hash];
 
   @override
-  List<MixerTransaction>? depositsByContract(String contract) =>
-      _depositsByContract[contract];
+  List<MixerTransaction>? depositsByMixer(String mixer) =>
+      _depositsByMixer[mixer];
 
   @override
-  List<MixerTransaction>? withdrawalsByContract(String contract) =>
-      _withdrawalsByContract[contract];
+  List<MixerTransaction>? withdrawalsByMixer(String mixer) =>
+      _withdrawalsByMixer[mixer];
 
   /// Loads tornado transactions from a CSV file
   @override
-  Future<List<MixerTransaction>> loadMixerTransactions(String contract) async {
-    final filePath = 'assets/data/tornadoFullHistory$contract.csv';
+  Future<List<MixerTransaction>> loadMixerTransactions(String mixer) async {
+    final filePath = 'assets/data/tornadoFullHistory$mixer.csv';
     final file = File(filePath);
     if (!file.existsSync()) {
       throw Exception('File not found: $filePath');
@@ -64,11 +64,11 @@ final class TornadoRepository implements MixerRepository {
       _txByHash[transaction.txHash] = transaction;
 
       if (transaction.isDeposit) {
-        _depositsByContract.putIfAbsent(contract, () => []);
-        _depositsByContract[contract]?.add(transaction);
+        _depositsByMixer.putIfAbsent(mixer, () => []);
+        _depositsByMixer[mixer]?.add(transaction);
       } else if (transaction.isWithdrawal) {
-        _withdrawalsByContract.putIfAbsent(contract, () => []);
-        _withdrawalsByContract[contract]?.add(transaction);
+        _withdrawalsByMixer.putIfAbsent(mixer, () => []);
+        _withdrawalsByMixer[mixer]?.add(transaction);
       }
     }
 
@@ -80,12 +80,12 @@ final class TornadoRepository implements MixerRepository {
   Future<List<MixerTransaction>> loadAllMixersTransactions() async {
     final transactions = <MixerTransaction>[];
 
-    for (final contract in mixers) {
+    for (final mixer in mixers) {
       try {
-        final txs = await loadMixerTransactions(contract);
+        final txs = await loadMixerTransactions(mixer);
         transactions.addAll(txs);
       } on Object catch (e) {
-        print('Error loading transaction from contract $contract: $e');
+        print('Error loading transaction from mixer $mixer: $e');
       }
     }
 
