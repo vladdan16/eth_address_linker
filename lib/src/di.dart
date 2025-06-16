@@ -2,6 +2,9 @@ import 'package:dio/dio.dart';
 import 'package:dotenv/dotenv.dart';
 import 'package:yx_scope/yx_scope.dart';
 
+import 'algorithm/algorithm.dart';
+import 'algorithm/bfs.dart';
+import 'algorithm/graph_algorithm.dart';
 import 'algorithm/union_find.dart';
 import 'data/api/api.dart';
 import 'data/api/blockchain_api_wrapper.dart';
@@ -14,7 +17,9 @@ import 'data/tornado_repository.dart';
 import 'domain/interactor.dart';
 
 /// Container for dependency injection
-class AppScopeContainer extends ScopeContainer {
+class AppScopeContainer extends DataScopeContainer<Algorithm> {
+  AppScopeContainer({required super.data});
+
   @override
   List<Set<AsyncDep<Object>>> get initializeQueue => [
     {_cacheServiceDep, _labeledAddressesRepositoryDep},
@@ -88,14 +93,19 @@ class AppScopeContainer extends ScopeContainer {
     TornadoRepository.new,
   );
 
-  late final _unionFindAlgDep = dep<UnionFind<String>>(UnionFind<String>.new);
+  late final _graphAlgorithmDep = dep<GraphAlgorithm<String>>(
+    () => switch (data) {
+      Algorithm.unionFind => UnionFind<String>(),
+      Algorithm.bfs => BFS<String>(),
+    },
+  );
 
   late final _interactorDep = dep<Interactor>(
     () => Interactor(
       _cachedAddressRepositoryDep.get,
       _tornadoRepositoryDep.get,
       _labeledAddressesRepositoryDep.get,
-      _unionFindAlgDep.get,
+      _graphAlgorithmDep.get,
     ),
   );
 
@@ -104,15 +114,12 @@ class AppScopeContainer extends ScopeContainer {
 
   /// Interactor dependency
   Interactor get interactor => _interactorDep.get;
-
-  /// Initialize all required services
-  Future<void> initialize() async {
-    // Initialize cache service
-    await _cacheServiceDep.get.init();
-  }
 }
 
-class AppScopeHolder extends ScopeHolder<AppScopeContainer> {
+class AppScopeHolder extends DataScopeHolder<AppScopeContainer, Algorithm> {
+  AppScopeHolder();
+
   @override
-  AppScopeContainer createContainer() => AppScopeContainer();
+  AppScopeContainer createContainer(Algorithm data) =>
+      AppScopeContainer(data: data);
 }

@@ -1,13 +1,15 @@
 // ignore analyzer for names in comments
 // ignore_for_file: comment_references
 
+import 'graph_algorithm.dart';
+
 /// A generic Union-Find (Disjoint-Set) data structure for arbitrary
 /// node types T.
 ///
 /// Note: T must correctly implement equality (`==`) and `hashCode` (which is
 /// the case for all built-in immutable types like String, int, etc., or any
 /// class that overrides them properly).
-class UnionFind<T> {
+final class UnionFind<T> implements GraphAlgorithm<T> {
   /// parent[x] = the parent of x, or x itself if x is a root.
   final Map<T, T> _parent = {};
 
@@ -17,9 +19,6 @@ class UnionFind<T> {
 
   /// Stores all direct connections between nodes
   final Map<T, Set<T>> _connections = {};
-
-  /// Creates a new UnionFind data structure
-  UnionFind();
 
   /// If x is not seen yet, create a new singleton set { x }.
   void _makeSet(T x) {
@@ -38,6 +37,14 @@ class UnionFind<T> {
       _parent[x] = find(_parent[x]!);
     }
     return _parent[x]!;
+  }
+
+  /// Adds an edge between two nodes in the graph.
+  ///
+  /// This is an alias for union() to conform to the GraphAlgorithm interface.
+  @override
+  void addEdge(T x, T y) {
+    union(x, y);
   }
 
   /// Union the sets containing x and y (by rank).
@@ -63,7 +70,10 @@ class UnionFind<T> {
   }
 
   /// Returns true if x and y are in the same connected component.
-  bool connected(T x, T y) {
+  ///
+  /// [maxDepth] is not applied for Union-Find
+  @override
+  bool connected(T x, T y, {int? maxDepth}) {
     if (!_parent.containsKey(x) || !_parent.containsKey(y)) {
       return false;
     }
@@ -79,6 +89,7 @@ class UnionFind<T> {
   /// Returns an empty list if the nodes are not connected
   /// If [maxDepth] is provided and the path length exceeds this value,
   /// the search will stop and return null
+  @override
   List<T>? findPath(T start, T end, {int? maxDepth}) {
     if (start == end) return [start];
 

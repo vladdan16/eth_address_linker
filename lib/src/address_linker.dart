@@ -1,14 +1,15 @@
+import 'algorithm/algorithm.dart';
 import 'di.dart';
 
 class AddressLinker {
   late final AppScopeHolder _scopeHolder;
 
-  Future<void> init() async {
+  Future<void> init({String? algorithm}) async {
     _scopeHolder = AppScopeHolder();
-    await _scopeHolder.create();
 
-    // Initialize cache service
-    await _scopeHolder.scope?.initialize();
+    final alg = algorithm ?? 'unionfind';
+    print('Initializing AddressLinker with algorithm: $alg');
+    await _scopeHolder.create(Algorithm.fromName(alg));
   }
 
   Future<void> run({int? startTimestamp, int? endTimestamp}) async {

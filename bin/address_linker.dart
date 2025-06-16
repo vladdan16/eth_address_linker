@@ -31,6 +31,18 @@ ArgParser buildParser() {
       'end-timestamp',
       help: 'End timestamp for transaction analysis (Unix timestamp)',
       valueHelp: 'timestamp',
+    )
+    ..addOption(
+      'algorithm',
+      help: 'Graph algorithm to use for finding connections',
+      valueHelp: 'algorithm',
+      allowed: ['unionfind', 'bfs'],
+      defaultsTo: 'unionfind',
+      allowedHelp: {
+        'unionfind': 'Union-Find algorithm (faster for connectivity checks)',
+        'bfs':
+            'Breadth-First Search (respects max depth in connectivity checks)',
+      },
     );
 
   parser
@@ -57,6 +69,7 @@ void printUsage(ArgParser argParser) {
   print('  run                  Runs construction of pairs');
   print('    --start-timestamp  Optional start timestamp (Unix timestamp)');
   print('    --end-timestamp    Optional end timestamp (Unix timestamp)');
+  print('    --algorithm        Graph algorithm to use (unionfind or bfs)');
   print('  process_transitive   Process top transitive addresses');
   print('  tag                  Gets the nametag for an Ethereum address');
   print('    --address, -a      Ethereum address to get nametag for');
@@ -82,8 +95,9 @@ void main(List<String> arguments) async {
       verbose = true;
     }
 
+    final algorithm = results.command?['algorithm'] as String?;
     final addressLinker = AddressLinker();
-    await addressLinker.init();
+    await addressLinker.init(algorithm: algorithm);
 
     final command = results.command?.name;
     if (command == null) {

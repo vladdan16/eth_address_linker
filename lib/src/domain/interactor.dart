@@ -1,4 +1,4 @@
-import '../algorithm/union_find.dart';
+import '../algorithm/graph_algorithm.dart';
 import '../data/address_repository.dart';
 import '../data/labeled_addresses_repository.dart';
 import '../data/mixer_repository.dart';
@@ -9,13 +9,13 @@ class Interactor {
   final AddressRepository _addressRepository;
   final MixerRepository _mixerRepository;
   final LabeledAddressesRepository _labeledAddressesRepository;
-  final UnionFind<String> _unionFind;
+  final GraphAlgorithm<String> _graphAlgorithm;
 
   const Interactor(
     this._addressRepository,
     this._mixerRepository,
     this._labeledAddressesRepository,
-    this._unionFind,
+    this._graphAlgorithm,
   );
 
   // Default timestamp values if not provided via CLI
@@ -103,7 +103,7 @@ Using time range: ${DateTime.fromMillisecondsSinceEpoch(effectiveStartTimestamp 
           continue;
         }
 
-        _unionFind.union(from, to);
+        _graphAlgorithm.addEdge(from, to);
       }
     }
 
@@ -159,7 +159,7 @@ Checking connections between ${deposits.length} deposits and ${withdrawals.lengt
             continue;
           }
 
-          if (_unionFind.connected(dep.account, wit.account)) {
+          if (_graphAlgorithm.connected(dep.account, wit.account)) {
             final possiblePair = PredictedPair(
               index: index,
               depHash: dep.txHash,
@@ -170,7 +170,7 @@ Checking connections between ${deposits.length} deposits and ${withdrawals.lengt
 
             if (isDebug) {
               try {
-                final path = _unionFind.findPath(
+                final path = _graphAlgorithm.findPath(
                   dep.account,
                   wit.account,
                   maxDepth: 4,
