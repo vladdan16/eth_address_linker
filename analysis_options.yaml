@@ -23,6 +23,7 @@ linter:
     sort_constructors_first: false
     avoid_print: false
     public_member_api_docs: false
+    one_member_abstracts: false
 
 # analyzer:
 #   exclude:

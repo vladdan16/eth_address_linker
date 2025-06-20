@@ -93,9 +93,46 @@ Available parameters:
    - Only pairs from the same Tornado Cash contract are considered (no cross-contract pairs)
 5. The results are saved to a CSV file for further analysis
 
+## Architecture
+
+The project follows a clean architecture approach with clear separation of concerns:
+
+### Domain Services
+
+The core business logic is organized into specialized domain services:
+
+- **GraphService**: Handles graph construction and connectivity checks
+- **PairAnalysisService**: Manages pair generation and analysis
+- **AddressInfoService**: Provides information about addresses
+- **TransitiveAddressService**: Processes transitive addresses
+
+### Interactor
+
+The Interactor class serves as a facade that coordinates between domain services to:
+- Create the transaction graph
+- Generate address pairs
+- Process transitive addresses
+- Retrieve address nametags
+
+### Data Layer
+
+- **Repositories**: Handle data access and caching
+- **API Clients**: Interface with blockchain data providers
+- **Models**: Represent domain entities
+
+### Dependency Injection
+
+The project uses a scope-based DI system to manage dependencies.
+
 ## Limitations
 
 - Analysis is based on on-chain transaction patterns and may not capture all relationships
 - Performance depends on the number of addresses being analyzed and your API rate limits
 - The tool focuses on Tornado Cash transactions and may not identify other privacy mechanisms
 - The BFS algorithm with a low max-depth may miss some connections that the Union-Find algorithm would find
+
+## Future Enhancements
+
+Potential areas for future development:
+- Support for additional privacy protocols beyond Tornado Cash
+- Visualization tools for graph exploration

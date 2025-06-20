@@ -15,6 +15,7 @@ import 'data/cached_address_repository.dart';
 import 'data/labeled_addresses_repository.dart';
 import 'data/tornado_repository.dart';
 import 'domain/interactor.dart';
+import 'domain/services/services.dart';
 
 /// Container for dependency injection
 class AppScopeContainer extends DataScopeContainer<Algorithm> {
@@ -100,17 +101,47 @@ class AppScopeContainer extends DataScopeContainer<Algorithm> {
     },
   );
 
-  late final _interactorDep = dep<Interactor>(
-    () => Interactor(
+  late final _labeledAddressesRepositoryDep =
+      asyncDep<LabeledAddressesRepository>(LabeledAddressesRepository.new);
+
+  late final _addressInfoServiceDep = dep<AddressInfoService>(
+    () => AddressInfoServiceImpl(
       _cachedAddressRepositoryDep.get,
-      _tornadoRepositoryDep.get,
       _labeledAddressesRepositoryDep.get,
-      _graphAlgorithmDep.get,
     ),
   );
 
-  late final _labeledAddressesRepositoryDep =
-      asyncDep<LabeledAddressesRepository>(LabeledAddressesRepository.new);
+  late final _graphServiceDep = dep<GraphService>(
+    () => GraphServiceImpl(
+      _cachedAddressRepositoryDep.get,
+      _graphAlgorithmDep.get,
+      _addressInfoServiceDep.get,
+    ),
+  );
+
+  late final _pairAnalysisServiceDep = dep<PairAnalysisService>(
+    () => PairAnalysisServiceImpl(
+      _graphServiceDep.get,
+      _tornadoRepositoryDep.get,
+    ),
+  );
+
+  late final _transitiveAddressServiceDep = dep<TransitiveAddressService>(
+    () => TransitiveAddressServiceImpl(
+      _cachedAddressRepositoryDep.get,
+      _tornadoRepositoryDep.get,
+    ),
+  );
+
+  late final _interactorDep = dep<Interactor>(
+    () => Interactor(
+      _graphServiceDep.get,
+      _pairAnalysisServiceDep.get,
+      _addressInfoServiceDep.get,
+      _transitiveAddressServiceDep.get,
+      _tornadoRepositoryDep.get,
+    ),
+  );
 
   /// Interactor dependency
   Interactor get interactor => _interactorDep.get;
