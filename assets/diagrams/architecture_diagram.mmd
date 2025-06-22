@@ -1,0 +1,70 @@
+%%{init: {"flowchart": {"curve": "step", "defaultRenderer": "elk"}} }%%
+flowchart LR
+    %% Presentation Layer
+    subgraph PL[Presentation Layer]
+      CLI["CLI<br/>(address_linker.dart)"]
+    end
+
+    %% Domain Layer
+    subgraph DL[Domain Layer]
+      Interactor
+      subgraph Services
+        direction LR
+        GraphService
+        PairAnalysisService
+        AddressInfoService
+      end
+      subgraph Algorithms
+        direction LR
+        GraphAlgorithm["«interface»<br>GraphAlgorithm"]
+        UnionFind
+        BFS
+      end
+    end
+
+    %% Data Layer
+    subgraph DTL[Data Layer]
+      subgraph Repos[Repositories]
+        direction LR
+        CachedAddressRepository
+        TornadoRepository["TornadoRepository<br/>(CSV Files)"]
+        LabeledAddressesRepository["LabeledAddressesRepository<br/>(JSON/TXT Files)"]
+      end
+      subgraph APIs[External APIs]
+        direction LR
+        BlockchainApiWrapper
+        EtherscanApi
+        MoralisApi
+      end
+      Cache["Cache<br/>(Hive DB)"]
+    end
+
+    %% Layer Connections
+    CLI-->Interactor
+
+    Interactor-->|uses|GraphService
+    Interactor-->|uses|PairAnalysisService
+    Interactor-->|uses|AddressInfoService
+
+    GraphService-->|delegates|GraphAlgorithm
+    GraphService---UnionFind
+    GraphService---BFS
+    PairAnalysisService-->|uses|GraphService
+
+    GraphService-->|retrieves|CachedAddressRepository
+    PairAnalysisService-->|uses|TornadoRepository
+    AddressInfoService-->|queries|CachedAddressRepository
+    AddressInfoService-->|loads|LabeledAddressesRepository
+
+    CachedAddressRepository-->|fetches|BlockchainApiWrapper
+    CachedAddressRepository-->|caches|Cache
+    BlockchainApiWrapper-->|calls|EtherscanApi
+    BlockchainApiWrapper-->|calls|MoralisApi
+
+    %% Styling
+    classDef presentation fill:#e6f3ff,stroke:#2574a9,stroke-width:2px;
+    classDef domain fill:#e6fffa,stroke:#00bd9d,stroke-width:2px;
+    classDef data fill:#fff5e6,stroke:#ff9900,stroke-width:2px;
+    class CLI presentation;
+    class Interactor,GraphService,PairAnalysisService,AddressInfoService,GraphAlgorithm,UnionFind,BFS domain;
+    class CachedAddressRepository,TornadoRepository,LabeledAddressesRepository,BlockchainApiWrapper,EtherscanApi,MoralisApi,Cache data;

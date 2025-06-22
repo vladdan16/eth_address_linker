@@ -1,0 +1,32 @@
+flowchart TD
+  subgraph Presentation
+    UI[CLI Interface]
+  end
+
+  subgraph Domain
+    Interactor[Interactor]
+    AppServices[Services]
+    Algorithms[Algorithms]
+  end
+
+  subgraph Data
+    Repos[Repositories]
+    Cache[Cache]
+    APIs[APIs]
+  end
+
+  UI --> Interactor
+  Interactor --> AppServices
+  AppServices --> Algorithms
+  AppServices --> Repos
+
+  Repos --> Cache
+  Repos --> APIs
+
+  classDef presentation fill:#e6f3ff,stroke:#2574a9,stroke-width:2px;
+  classDef domain fill:#e6fffa,stroke:#00bd9d,stroke-width:2px;
+  classDef data fill:#fff5e6,stroke:#ff9900,stroke-width:2px;
+  class UI presentation;
+  class Interactor,AppServices,Algorithms domain;
+  class Repos,APIs,Cache data;
+
