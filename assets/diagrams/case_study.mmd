@@ -1,0 +1,13 @@
+graph LR
+    A["Depositor<br>(0x2962...dc)"]
+    B["Withdrawer<br>(0xf7b1...df)"]
+    C["Intermediary Hub<br>(0xf075...bb)"]
+
+    C -- "Sep-20-2019<br>0.1 ETH" --> A
+    C -. "Oct-30-2019<br>0.33 ETH" .-> A
+
+    B -- "<b>Apr-23-2020<br>0.01 ETH</b>" --> C
+
+    style A fill:#e6fffa,stroke:#333
+    style B fill:#e6fffa,stroke:#333
+    style C fill:#fff5e6,stroke:#333,stroke-width:2px
