@@ -114,7 +114,12 @@ void main(List<String> arguments) async {
       verbose = true;
     }
 
-    final algorithm = results.command?['algorithm'] as String?;
+    String? algorithm;
+    try {
+      algorithm = results.command?['algorithm'] as String?;
+    } on Object catch (_) {
+      // no-op
+    }
     final addressLinker = AddressLinker();
     await addressLinker.init(algorithm: algorithm);
 

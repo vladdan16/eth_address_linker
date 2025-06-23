@@ -33,7 +33,7 @@ Checking connections between ${deposits.length} deposits and ${withdrawals.lengt
 
     for (var i = 0; i < deposits.length; i++) {
       for (var j = 0; j < withdrawals.length; j++) {
-        if (current % 1000 == 0) {
+        if (current % 10000 == 0) {
           print('Checked $current connections');
         }
         current++;
